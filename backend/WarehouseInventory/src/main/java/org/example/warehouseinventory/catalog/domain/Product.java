@@ -1,7 +1,10 @@
-package org.example.warehouseinventory.shared.domain;
+package org.example.warehouseinventory.catalog.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.warehouseinventory.shared.domain.AuditableEntity;
+import org.example.warehouseinventory.shared.domain.Dimensions;
+import org.example.warehouseinventory.shared.domain.Weight;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.example.warehouseinventory.shared.domain.enums.StorageRequirement;
 import org.hibernate.annotations.SQLRestriction;
