@@ -1,7 +1,10 @@
 package org.example.warehouseinventory.catalog.domain.exception;
 
-public class ProductNotFoundException extends RuntimeException {
+import org.example.warehouseinventory.shared.api.exception.ApiException;
+import org.springframework.http.HttpStatus;
+
+public class ProductNotFoundException extends ApiException {
     public ProductNotFoundException(String message) {
-        super(message);
+        super(message, HttpStatus.NOT_FOUND, "PRODUCT_NOT_FOUND");
     }
 }

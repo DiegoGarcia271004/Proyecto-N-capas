@@ -1,6 +1,8 @@
 package org.example.warehouseinventory.shared.domain.enums;
 
-public enum ProductCategory {
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+public enum ProductCategory implements JsonCreatable<ProductCategory>{
     FOOD_PERISHABLE,
     FOOD_NON_PERISHABLE,
     BEVERAGES,
@@ -30,5 +32,10 @@ public enum ProductCategory {
     OFFICE_SUPPLIES,
     SEASONAL,
     PROMOTIONAL,
-    OTHER
+    OTHER;
+
+    @JsonCreator
+    public static ProductCategory fromValue(String value) {
+        return JsonCreatable.fromValue(value, ProductCategory.class);
+    }
 }
