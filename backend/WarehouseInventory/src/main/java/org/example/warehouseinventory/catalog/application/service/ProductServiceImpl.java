@@ -50,7 +50,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getProductsByCategory(ProductCategory category) {
-        return productMapper.toDtoList(productRepository.findByCategory(category));
+        List<Product> products = productRepository.findAll();
+        return productMapper.toDtoList(products.stream().filter(p -> p.getProductCategory().equals(category)).toList());
     }
 
     @Override
@@ -90,5 +91,5 @@ public class ProductServiceImpl implements ProductService {
         product.activate();
         return productMapper.toDto(productRepository.save(product));
     }
-    
+
 }

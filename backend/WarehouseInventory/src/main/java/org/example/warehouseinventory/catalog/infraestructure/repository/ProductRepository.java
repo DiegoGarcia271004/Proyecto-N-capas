@@ -17,8 +17,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     boolean existsBySku(String sku);
 
-    List<Product> findByCategory(ProductCategory category);
-
     @Query(value = "SELECT * FROM product WHERE id = :id", nativeQuery = true)
     Optional<Product> findByIdIncludingInactive(@Param("id") UUID id);
 
