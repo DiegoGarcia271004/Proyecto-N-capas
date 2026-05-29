@@ -1,6 +1,6 @@
 package org.example.warehouseinventory.catalog.infraestructure.repository;
 
-import org.example.warehouseinventory.catalog.domain.Product;
+import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,8 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findByCategory(ProductCategory category);
 
     @Query(value = "SELECT * FROM product WHERE id = :id", nativeQuery = true)
-    Optional<Product> findByIdIncludingInactive(@Param("id") Long id);
+    Optional<Product> findByIdIncludingInactive(@Param("id") UUID id);
 
-    @Query(value = "SELECT * FROM product WHERE active = false" ,nativeQuery = true)
-    List<Product> findAllInactive();
+    @Query(value = "SELECT * FROM product WHERE active = false AND active = true" ,nativeQuery = true)
+    List<Product> findAll();
 }

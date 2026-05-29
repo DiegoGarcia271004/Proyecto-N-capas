@@ -1,4 +1,4 @@
-package org.example.warehouseinventory.catalog.domain;
+package org.example.warehouseinventory.catalog.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,6 +15,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "product")
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @SQLRestriction("active = true")
@@ -46,5 +47,13 @@ public class Product extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     private StorageRequirement storageRequirement;
 
-    private Boolean active = true;
+    private Boolean active;
+
+    public void deactivate() {
+        active = false;
+    }
+
+    public void activate() {
+        active = true;
+    }
 }
