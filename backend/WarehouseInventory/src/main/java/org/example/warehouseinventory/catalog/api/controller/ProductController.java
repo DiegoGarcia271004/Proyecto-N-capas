@@ -23,7 +23,7 @@ public class ProductController {
 
     private final ProductServiceImpl productService;
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<GeneralResponse> createProduct(@Valid @RequestBody CreateProductRequest req) {
         return buildResponse(
                 "Product created successfully",
@@ -95,7 +95,7 @@ public class ProductController {
         );
     }
 
-    @DeleteMapping("delete/activate/{id}")
+    @PutMapping("/activate/{id}")
     public ResponseEntity<GeneralResponse> activateProduct(@PathVariable UUID id) {
         return buildResponse(
                 "Product activated successfully",
