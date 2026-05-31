@@ -30,7 +30,7 @@ public abstract class AuditableEntity {
     @Column(name = "created_by", updatable = false)
     private String createdBy;
 
-    @LastModifiedDate
+    @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
 
