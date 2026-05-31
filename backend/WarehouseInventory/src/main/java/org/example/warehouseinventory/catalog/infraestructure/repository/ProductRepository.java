@@ -19,9 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     List<Product> findByProductCategory(ProductCategory category);
 
-    @Query(value = "SELECT * FROM product WHERE id = :id", nativeQuery = true)
+    @Query(value = "SELECT * FROM producs WHERE id = :id", nativeQuery = true)
     Optional<Product> findByIdIncludingInactive(@Param("id") UUID id);
 
-    @Query(value = "SELECT * FROM product WHERE active = false AND active = true" ,nativeQuery = true)
-    List<Product> findAll();
 }
