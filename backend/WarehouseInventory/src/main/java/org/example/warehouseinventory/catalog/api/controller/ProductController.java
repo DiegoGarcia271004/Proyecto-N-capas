@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.application.service.ProductServiceImpl;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
+import org.example.warehouseinventory.shared.api.BaseController;
 import org.example.warehouseinventory.shared.domain.GeneralResponse;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -19,11 +21,12 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product")
-public class ProductController {
+public class ProductController extends BaseController {
 
     private final ProductServiceImpl productService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> createProduct(@Valid @RequestBody CreateProductRequest req) {
         return buildResponse(
                 "Product created successfully",
@@ -33,6 +36,7 @@ public class ProductController {
     }
 
     @GetMapping("/id/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'OPERATOR')")
     public ResponseEntity<GeneralResponse> getProductById(@PathVariable UUID id) {
         return buildResponse(
                 "Product found",
@@ -42,6 +46,7 @@ public class ProductController {
     }
 
     @GetMapping("/sku/{sku}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'OPERATOR')")
     public ResponseEntity<GeneralResponse> getProductBySku(@PathVariable String sku) {
         return buildResponse(
                 "Product found",
@@ -51,6 +56,7 @@ public class ProductController {
     }
 
     @GetMapping("/category/{category}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'OPERATOR')")
     public ResponseEntity<GeneralResponse> getProductsByCategory(@PathVariable ProductCategory category) {
         return buildResponse(
                 "Products found",
@@ -60,6 +66,7 @@ public class ProductController {
     }
 
     @GetMapping("/inactive")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> getAllProducts() {
         return buildResponse(
                 "Products found",
@@ -69,6 +76,7 @@ public class ProductController {
     }
 
     @GetMapping("/id/inactive/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> getInactiveProductById(@PathVariable UUID id) {
         return buildResponse(
                 "Product found",
@@ -78,6 +86,7 @@ public class ProductController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> updateProduct(@PathVariable UUID id, @Valid @RequestBody UpdateProductRequest req) {
         return buildResponse(
                 "Product updated successfully",
@@ -87,6 +96,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> deactivateProduct(@PathVariable UUID id) {
         return buildResponse(
                 "Product deactivated successfully",
@@ -96,26 +106,13 @@ public class ProductController {
     }
 
     @PutMapping("/activate/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> activateProduct(@PathVariable UUID id) {
         return buildResponse(
                 "Product activated successfully",
                 HttpStatus.OK,
                 productService.activateProduct(id)
         );
-    }
-
-    public ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {
-        String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
-        return ResponseEntity
-                .status(status)
-                .body(GeneralResponse.builder()
-                        .uri(uri)
-                        .message(message)
-                        .status(status.value())
-                        .time(LocalDateTime.now())
-                        .data(data)
-                        .build()
-                );
     }
 }
 

@@ -38,9 +38,6 @@ public record UpdateProductRequest(
         @Positive
         BigDecimal reorderPoint,
 
-        @NotNull
-        @NotBlank
-        Boolean active,
 
         @NotNull
         @NotBlank
