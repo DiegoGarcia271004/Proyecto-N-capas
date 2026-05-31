@@ -75,7 +75,7 @@ public class ProductServiceImpl implements ProductService {
             }
         });
 
-        return productMapper.toDto(productRepository.save(product));
+        return productMapper.toDto(productRepository.save(productMapper.toEntityUpdate(id, req)));
     }
 
     @Override
