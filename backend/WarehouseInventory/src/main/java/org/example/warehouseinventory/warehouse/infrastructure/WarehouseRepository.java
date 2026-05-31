@@ -1,6 +1,5 @@
 package org.example.warehouseinventory.warehouse.infrastructure;
 
-import org.example.warehouseinventory.warehouse.domain.Warehouse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
