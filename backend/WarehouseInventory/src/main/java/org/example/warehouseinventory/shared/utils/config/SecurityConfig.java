@@ -2,6 +2,7 @@ package org.example.warehouseinventory.shared.utils.config;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,7 +21,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -41,7 +44,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.decoder(jwtDecoder)));
+                        .jwt(jwt -> jwt.decoder(jwtDecoder))
+                        .authenticationEntryPoint(authEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()));
 
         return http.build();
     }
@@ -85,5 +93,24 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    private AuthenticationEntryPoint authEntryPoint() {
+        return (request, response, ex) -> {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(
+                    "{\"code\": \"UNAUTHORIZED\", \"message\": \"Authentication is required\"}");
+        };
+
+    }
+
+    private AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, ex) -> {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write(
+                    "{\"code\": \"FORBIDDEN\", \"message\": \"You don't have permission to access this resource\"}");
+        };
     }
 }

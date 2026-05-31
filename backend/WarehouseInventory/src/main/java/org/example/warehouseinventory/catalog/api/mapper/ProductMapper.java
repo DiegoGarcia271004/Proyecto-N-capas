@@ -40,16 +40,16 @@ public class ProductMapper {
 
     public Product toEntityResponse(ProductResponse res) {
         return Product.builder()
-                .id(res.getId())
-                .sku(res.getSku())
-                .name(res.getName())
-                .dimensions(res.getDimensions())
-                .weight(res.getWeight())
-                .minStockLevel(res.getMinStockLevel())
-                .reorderPoint(res.getReorderPoint())
-                .productCategory(res.getCategory())
-                .storageRequirement(res.getStorageRequirement())
-                .active(res.getActive())
+                .id(res.id())
+                .sku(res.sku())
+                .name(res.name())
+                .dimensions(res.dimensions())
+                .weight(res.weight())
+                .minStockLevel(res.minStockLevel())
+                .reorderPoint(res.reorderPoint())
+                .productCategory(res.category())
+                .storageRequirement(res.storageRequirement())
+                .active(res.active())
                 .build();
     }
 

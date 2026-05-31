@@ -38,8 +38,8 @@ public class Product extends AuditableEntity {
     @Embedded
     private Weight weight;
 
-    private BigDecimal minStockLevel; //helps to make an alert for restock
-    private BigDecimal reorderPoint; //help with ROP
+    private Integer minStockLevel; //helps to make an alert for restock
+    private Integer reorderPoint; //help with ROP
 
     @Enumerated(EnumType.STRING)
     private ProductCategory productCategory;
