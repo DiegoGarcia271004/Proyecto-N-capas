@@ -56,4 +56,18 @@ public class Product extends AuditableEntity {
     public void activate() {
         active = true;
     }
+
+
+    public void update(String sku, String name, ProductCategory category,
+                       StorageRequirement storageRequirement, Integer minStockLevel,
+                       Integer reorderPoint, Weight weight, Dimensions dimensions) {
+        this.sku = sku;
+        this.name = name;
+        this.productCategory = category;
+        this.storageRequirement = storageRequirement;
+        this.minStockLevel = minStockLevel;
+        this.reorderPoint = reorderPoint;
+        this.weight = weight;
+        this.dimensions = dimensions;
+    }
 }

@@ -8,6 +8,7 @@ import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRe
 import org.example.warehouseinventory.catalog.domain.dto.response.ProductResponse;
 import org.example.warehouseinventory.shared.api.exception.ApiException;
 import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolationException;
+import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.Dimensions;
 import org.example.warehouseinventory.shared.domain.Weight;
 import org.example.warehouseinventory.shared.domain.enums.DimensionUnit;
@@ -125,7 +126,7 @@ public class ProductControllerTest {
     void getProductById_notFound_returns404() throws Exception {
         UUID id = UUID.randomUUID();
         when(productService.getProductById(id))
-                .thenThrow(new ApiException.ResourceNotFoundException(id.toString()));
+                .thenThrow(new ResourceNotFoundException(id.toString()));
 
         mockMvc.perform(get("/api/product/id/{id}", id))
                 .andExpect(status().isNotFound())
@@ -146,7 +147,7 @@ public class ProductControllerTest {
     @WithMockUser(roles = "OPERATOR")
     void getProductBySku_notFound_returns404() throws Exception {
         when(productService.getProductBySku("SKU-999"))
-                .thenThrow(new ApiException.ResourceNotFoundException("SKU-999"));
+                .thenThrow(new ResourceNotFoundException("SKU-999"));
 
         mockMvc.perform(get("/api/product/sku/{sku}", "SKU-999"))
                 .andExpect(status().isNotFound());
@@ -230,7 +231,7 @@ public class ProductControllerTest {
     void getInactiveProductById_notFound_returns404() throws Exception {
         UUID id = UUID.randomUUID();
         when(productService.getProductIncludingInactive(id))
-                .thenThrow(new ApiException.ResourceNotFoundException(id.toString()));
+                .thenThrow(new ResourceNotFoundException(id.toString()));
 
         mockMvc.perform(get("/api/product/id/inactive/{id}", id))
                 .andExpect(status().isNotFound());
@@ -264,7 +265,7 @@ public class ProductControllerTest {
     void updateProduct_notFound_returns404() throws Exception {
         UUID id = UUID.randomUUID();
         when(productService.updateProduct(eq(id), any()))
-                .thenThrow(new ApiException.ResourceNotFoundException(id.toString()));
+                .thenThrow(new ResourceNotFoundException(id.toString()));
 
         mockMvc.perform(put("/api/product/update/{id}", id)
                         .contentType(APPLICATION_JSON)
