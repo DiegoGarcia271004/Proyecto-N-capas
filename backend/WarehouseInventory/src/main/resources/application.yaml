@@ -17,3 +17,7 @@ spring:
 
   jwt:
     expiration-minutes: 60
+
+  jackson:
+    deserialization:
+      use-big-decimal-for-floats: true

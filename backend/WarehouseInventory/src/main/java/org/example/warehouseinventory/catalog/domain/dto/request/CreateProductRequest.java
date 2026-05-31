@@ -12,37 +12,29 @@ import java.math.BigDecimal;
 
 public record CreateProductRequest(
 
-    @NotNull
     @NotBlank(message = "SKU is required")
     String sku,
 
-    @NotNull
     @NotBlank(message = "A name is required")
     String name,
 
     @NotNull(message = "A category is required")
-    @NotBlank
     ProductCategory category,
 
     @NotNull
-    @NotBlank
     @Positive
-    BigDecimal minStockLevel,
+    Integer minStockLevel,
 
     @NotNull
-    @NotBlank
     @Positive
-    BigDecimal reorderPoint,
+    Integer reorderPoint,
 
     @NotNull
-    @NotBlank
     Weight weight,
 
     @NotNull
-    @NotBlank
     Dimensions dimensions,
 
     @NotNull
-    @NotBlank
     StorageRequirement requirements
 ){}
