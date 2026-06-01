@@ -11,6 +11,7 @@ import org.example.warehouseinventory.inventory.domain.entity.StockMovement;
 import org.example.warehouseinventory.inventory.infrastructure.repository.LotRepository;
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.api.exception.ApiException;
+import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
 import org.example.warehouseinventory.warehouse.domain.StorageLocation;
 import org.example.warehouseinventory.warehouse.domain.Warehouse;
@@ -41,7 +42,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
         Product _product = productMapper.toEntityResponse(productService.getProductById(product));
 
         Warehouse _warehouse = warehouseRepository.findById(warehouse)
-                .orElseThrow(() -> new ApiException.ResourceNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Warehouse not found with id: " + warehouse
                 ));
 
@@ -49,7 +50,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 .findByWarehouseIdAndAvailableTrue(warehouse)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new ApiException.ResourceNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "No available storage location in warehouse: " + warehouse
                 ));
 
