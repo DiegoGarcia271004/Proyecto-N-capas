@@ -5,12 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
+import org.example.warehouseinventory.inventory.api.mapper.InventoryMapper;
 import org.example.warehouseinventory.inventory.application.service.InventoryEntryService;
+import org.example.warehouseinventory.inventory.domain.dto.request.InventoryEntryRequest;
+import org.example.warehouseinventory.inventory.domain.dto.response.LotResponse;
 import org.example.warehouseinventory.inventory.domain.entity.Lot;
 import org.example.warehouseinventory.inventory.domain.entity.StockMovement;
 import org.example.warehouseinventory.inventory.infrastructure.repository.LotRepository;
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
-import org.example.warehouseinventory.shared.api.exception.ApiException;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
 import org.example.warehouseinventory.warehouse.domain.StorageLocation;
@@ -34,38 +36,39 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
     private final StorageLocationRepository storageLocationRepository;
     private final LotRepository lotRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final InventoryMapper inventoryMapper;
 
     @Override
     @Transactional
-    public Lot registerEntry(UUID product, UUID warehouse, String lotNumber, Integer quantity, LocalDate expirationDate) {
+    public LotResponse registerEntry(InventoryEntryRequest request) {
 
-        Product _product = productMapper.toEntityResponse(productService.getProductById(product));
+        Product _product = productMapper.toEntityResponse(productService.getProductById(request.product()));
 
-        Warehouse _warehouse = warehouseRepository.findById(warehouse)
+        Warehouse _warehouse = warehouseRepository.findById(request.warehouse())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Warehouse not found with id: " + warehouse
+                        "Warehouse not found with id: " + request.warehouse()
                 ));
 
         StorageLocation location = storageLocationRepository
-                .findByWarehouseIdAndAvailableTrue(warehouse)
+                .findByWarehouseIdAndAvailableTrue(request.warehouse())
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "No available storage location in warehouse: " + warehouse
+                        "No available storage location in warehouse: " + request.warehouse()
                 ));
 
         Lot lot = Lot.builder()
                 .product(_product)
                 .warehouse(_warehouse)
                 .storageLocation(location)
-                .lotNumber(lotNumber)
-                .quantity(quantity)
-                .expirationDate(expirationDate)
+                .lotNumber(request.lotNumber())
+                .quantity(request.quantity())
+                .expirationDate(request.expirationDate())
                 .build();
 
         lotRepository.save(lot);
 
-        location.addOccupancy(quantity);
+        location.addOccupancy(request.quantity());
         storageLocationRepository.save(location);
 
         String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
@@ -74,13 +77,13 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
         StockMovement movement = StockMovement.builder()
                 .lot(lot)
                 .type(MovementType.ENTRY)
-                .quantity(quantity)
+                .quantity(request.quantity())
                 .performedBy(performedBy)
                 .notes(null)
                 .build();
 
         stockMovementRepository.save(movement);
-        return lot;
+        return inventoryMapper.toDto(lot);
     }
 
 }

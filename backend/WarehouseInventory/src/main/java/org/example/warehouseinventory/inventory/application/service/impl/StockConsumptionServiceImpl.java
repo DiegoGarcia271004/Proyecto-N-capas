@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
 import org.example.warehouseinventory.inventory.application.service.StockConsumptionService;
+import org.example.warehouseinventory.inventory.domain.dto.request.StockConsumptionRequest;
 import org.example.warehouseinventory.inventory.domain.entity.Lot;
 import org.example.warehouseinventory.inventory.domain.entity.StockMovement;
 import org.example.warehouseinventory.inventory.domain.exception.InsufficientStockException;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,25 +31,25 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
 
     @Override
     @Transactional
-    public void consumeStock(UUID product, UUID warehouse, Integer quantityRequested) {
+    public void consumeStock(StockConsumptionRequest request) {
 
-        productService.getProductById(product);
+        productService.getProductById(request.product());
 
-        List<Lot> lots = lotRepository.findAvailableLotsFifo(product, warehouse);
+        List<Lot> lots = lotRepository.findAvailableLotsFifo(request.product(), request.warehouse());
 
         int totalAvailable = lots.stream()
                 .mapToInt(Lot::getAvailableQuantity)
                 .sum();
 
-        if (totalAvailable < quantityRequested)
+        if (totalAvailable < request.quantity())
             throw new InsufficientStockException(
-                    product.toString(), quantityRequested, totalAvailable
+                    request.product().toString(), request.quantity(), totalAvailable
             );
 
         String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
                 .getAuthentication()).getName();
 
-        int remaining = quantityRequested;
+        int remaining = request.quantity();
 
         for (Lot lot : lots) {
 

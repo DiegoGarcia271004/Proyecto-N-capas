@@ -1,8 +1,8 @@
 package org.example.warehouseinventory.inventory.application.service;
 
-import java.util.UUID;
+import org.example.warehouseinventory.inventory.domain.dto.request.StockConsumptionRequest;
 
 public interface StockConsumptionService {
 
-    void consumeStock(UUID product, UUID warehouse, Integer quantityRequested);
+    void consumeStock(StockConsumptionRequest request);
 }
