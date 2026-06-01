@@ -24,33 +24,12 @@ public class ProductMapper {
                 .build();
     }
 
-    public Product toEntityUpdate(UUID id, UpdateProductRequest req) {
-        return Product.builder()
-                .id(id)
-                .sku(req.sku())
-                .name(req.name())
-                .dimensions(req.dimensions())
-                .weight(req.weight())
-                .minStockLevel(req.minStockLevel())
-                .reorderPoint(req.reorderPoint())
-                .productCategory(req.category())
-                .storageRequirement(req.requirements())
-                .build();
-    }
-
-    public Product toEntityResponse(ProductResponse res) {
-        return Product.builder()
-                .id(res.getId())
-                .sku(res.getSku())
-                .name(res.getName())
-                .dimensions(res.getDimensions())
-                .weight(res.getWeight())
-                .minStockLevel(res.getMinStockLevel())
-                .reorderPoint(res.getReorderPoint())
-                .productCategory(res.getCategory())
-                .storageRequirement(res.getStorageRequirement())
-                .active(res.getActive())
-                .build();
+    public void updateEntity(Product product, UpdateProductRequest req) {
+        product.update(
+                req.sku(), req.name(), req.category(),
+                req.requirements(), req.minStockLevel(),
+                req.reorderPoint(), req.weight(), req.dimensions()
+        );
     }
 
     public ProductResponse toDto(Product product) {

@@ -12,19 +12,17 @@ import org.example.warehouseinventory.shared.domain.enums.StorageRequirement;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProductResponse {
-    private UUID id;
-    private String sku;
-    private String name;
-    private Dimensions dimensions;
-    private Weight weight;
-    private BigDecimal minStockLevel;
-    private BigDecimal reorderPoint;
-    private ProductCategory category;
-    private StorageRequirement storageRequirement;
-    private Boolean active;
+public record ProductResponse(
+        UUID id,
+        String sku,
+        String name,
+        Dimensions dimensions,
+        Weight weight,
+        Integer minStockLevel,
+        Integer reorderPoint,
+        ProductCategory category,
+        StorageRequirement storageRequirement,
+        Boolean active
+) {
 }

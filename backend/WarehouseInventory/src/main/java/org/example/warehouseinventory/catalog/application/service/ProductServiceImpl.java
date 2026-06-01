@@ -7,8 +7,8 @@ import org.example.warehouseinventory.catalog.domain.dto.response.ProductRespons
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.catalog.infraestructure.repository.ProductRepository;
-import org.example.warehouseinventory.shared.api.exception.ApiException;
 import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolationException;
+import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.springframework.stereotype.Service;
 
@@ -34,24 +34,24 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse getProductById(UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new ApiException.ResourceNotFoundException("A product with this id does not exists");
-        }
-
-        return productMapper.toDto(productRepository.getReferenceById(id));
+        return productMapper.toDto(
+                productRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"))
+        );
     }
 
     @Override
     public ProductResponse getProductBySku(String sku) {
         return productMapper.toDto(productRepository.findBySku(sku).orElseThrow(
-                () -> new ApiException.ResourceNotFoundException("A product with this SKU does not exists")
+                () -> new ResourceNotFoundException("A product with this SKU does not exists")
         ));
     }
 
     @Override
     public List<ProductResponse> getProductsByCategory(ProductCategory category) {
-        List<Product> products = productRepository.findAll();
-        return productMapper.toDtoList(products.stream().filter(p -> p.getProductCategory().equals(category)).toList());
+        return productMapper.toDtoList(
+                productRepository.findByProductCategory(category)
+        );
     }
 
     @Override
@@ -62,32 +62,37 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProductIncludingInactive(UUID id) {
         return productMapper.toDto(
-                productRepository.findByIdIncludingInactive(id).orElseThrow(() -> new ApiException.ResourceNotFoundException("A product with this ID does not exists"))
+                productRepository.findByIdIncludingInactive(id).orElseThrow(() -> new ResourceNotFoundException("A product with this ID does not exists"))
         );
     }
 
     @Override
     public ProductResponse updateProduct(UUID id, UpdateProductRequest req) {
-        Product product = productMapper.toEntityResponse(this.getProductById(id));
-        productRepository.findBySku(req.sku()).ifPresent( existing -> {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
+
+        productRepository.findBySku(req.sku()).ifPresent(existing -> {
             if (!existing.getId().equals(id)) {
                 throw new BusinessRuleViolationException("SKU " + req.sku() + " already exists for another product");
             }
         });
 
-        return productMapper.toDto(productRepository.save(productMapper.toEntityUpdate(id, req)));
+        productMapper.updateEntity(product, req);
+        return productMapper.toDto(productRepository.save(product));
     }
 
     @Override
     public ProductResponse deactivateProduct(UUID id) {
-        Product product = productMapper.toEntityResponse(this.getProductById(id));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
         product.deactivate();
         return productMapper.toDto(productRepository.save(product));
     }
 
     @Override
     public ProductResponse activateProduct(UUID id) {
-        Product product = productMapper.toEntityResponse(this.getProductById(id));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
         product.activate();
         return productMapper.toDto(productRepository.save(product));
     }

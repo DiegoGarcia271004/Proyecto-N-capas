@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name = "product")
+@Table(name = "products")
 @Getter
 @Builder
 @AllArgsConstructor
@@ -38,8 +38,8 @@ public class Product extends AuditableEntity {
     @Embedded
     private Weight weight;
 
-    private BigDecimal minStockLevel; //helps to make an alert for restock
-    private BigDecimal reorderPoint; //help with ROP
+    private Integer minStockLevel; //helps to make an alert for restock
+    private Integer reorderPoint; //help with ROP
 
     @Enumerated(EnumType.STRING)
     private ProductCategory productCategory;
@@ -55,5 +55,19 @@ public class Product extends AuditableEntity {
 
     public void activate() {
         active = true;
+    }
+
+
+    public void update(String sku, String name, ProductCategory category,
+                       StorageRequirement storageRequirement, Integer minStockLevel,
+                       Integer reorderPoint, Weight weight, Dimensions dimensions) {
+        this.sku = sku;
+        this.name = name;
+        this.productCategory = category;
+        this.storageRequirement = storageRequirement;
+        this.minStockLevel = minStockLevel;
+        this.reorderPoint = reorderPoint;
+        this.weight = weight;
+        this.dimensions = dimensions;
     }
 }
