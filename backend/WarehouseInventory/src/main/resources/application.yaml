@@ -8,16 +8,16 @@ spring:
     password: ${DB_PASSWORD}
 
   jpa:
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  jwt:
-    expiration-minutes: 60
-
   jackson:
     deserialization:
       use-big-decimal-for-floats: true
+
+jwt:
+  expiration-minutes: 60

@@ -3,6 +3,7 @@ package org.example.warehouseinventory.shared.api;
 import org.example.warehouseinventory.shared.api.exception.ApiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,14 @@ public class ApiExceptionHandler {
         return ResponseEntity
                 .status(ex.getStatus())
                 .body(new ErrorResponse(ex.getCode(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("INVALID_CREDENTIALS", "Invalid username or password. Access denied."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

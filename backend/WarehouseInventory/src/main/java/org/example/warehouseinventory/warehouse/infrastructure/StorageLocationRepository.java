@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface StorageLocationRepository extends JpaRepository<StorageLocation, UUID> {
 
-    List<StorageLocation> findByWarehouseIdAndAvailableTrue(UUID warehouse);
+    List<StorageLocation> findByWarehouseIdAndAvailableTrue(UUID warehouseId);
 }

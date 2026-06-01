@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -63,7 +64,9 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 .storageLocation(location)
                 .lotNumber(request.lotNumber())
                 .quantity(request.quantity())
+                .availableQuantity(request.quantity())
                 .expirationDate(request.expirationDate())
+                .receivedAt(LocalDateTime.now())
                 .build();
 
         lotRepository.save(lot);
@@ -79,6 +82,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 .type(MovementType.ENTRY)
                 .quantity(request.quantity())
                 .performedBy(performedBy)
+                .occurredAt(LocalDateTime.now())
                 .notes(null)
                 .build();
 

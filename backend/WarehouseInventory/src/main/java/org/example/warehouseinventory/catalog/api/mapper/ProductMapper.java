@@ -21,6 +21,7 @@ public class ProductMapper {
                 .reorderPoint(req.reorderPoint())
                 .productCategory(req.category())
                 .storageRequirement(req.requirements())
+                .active(true)
                 .build();
     }
 

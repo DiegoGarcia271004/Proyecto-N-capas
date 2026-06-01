@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface StockMovementRepository extends JpaRepository<StockMovement, UUID> {
 
-    List<StockMovement> findByLotId(UUID id);
+    List<StockMovement> findByLotId(UUID lotId);
 }

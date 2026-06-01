@@ -25,7 +25,7 @@ public class InventoryController extends BaseController {
     private final StockConsumptionService stockConsumptionService;
 
     @PostMapping("/entry")
-    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'OPERATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> registerEntry(
             @Valid @RequestBody InventoryEntryRequest request
     ) {
@@ -38,7 +38,7 @@ public class InventoryController extends BaseController {
     }
 
     @PostMapping("/consume")
-    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'OPERATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> consumeStock(
             @Valid @RequestBody StockConsumptionRequest request
     ) {
