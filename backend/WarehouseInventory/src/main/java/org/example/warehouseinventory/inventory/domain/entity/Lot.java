@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.shared.domain.AuditableEntity;
-import org.example.warehouseinventory.warehouse.domain.StorageLocation;
-import org.example.warehouseinventory.warehouse.domain.Warehouse;
+import org.example.warehouseinventory.warehouse.domain.entity.StorageLocation;
+import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

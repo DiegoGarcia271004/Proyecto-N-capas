@@ -15,17 +15,16 @@ import org.example.warehouseinventory.inventory.infrastructure.repository.LotRep
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
-import org.example.warehouseinventory.warehouse.domain.StorageLocation;
-import org.example.warehouseinventory.warehouse.domain.Warehouse;
+import org.example.warehouseinventory.warehouse.domain.entity.StorageLocation;
+import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
+import org.example.warehouseinventory.warehouse.domain.exception.NoAvailableStorageLocationException;
 import org.example.warehouseinventory.warehouse.infrastructure.StorageLocationRepository;
 import org.example.warehouseinventory.warehouse.infrastructure.WarehouseRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,12 +50,12 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 ));
 
         StorageLocation location = storageLocationRepository
-                .findByWarehouseIdAndAvailableTrue(request.warehouse())
+                .findAvailableByCapacity(request.warehouse(), request.quantity())
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No available storage location in warehouse: " + request.warehouse()
-                ));
+                .orElseThrow(() -> new NoAvailableStorageLocationException(
+                        _warehouse.getId(), request.quantity(), storageLocationRepository.getCapacityAvailableByWarehouse(_warehouse.getId()))
+                );
 
         Lot lot = Lot.builder()
                 .product(_product)

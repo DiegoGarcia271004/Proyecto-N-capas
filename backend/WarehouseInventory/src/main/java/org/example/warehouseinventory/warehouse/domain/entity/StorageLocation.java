@@ -1,4 +1,4 @@
-package org.example.warehouseinventory.warehouse.domain;
+package org.example.warehouseinventory.warehouse.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
