@@ -13,7 +13,5 @@ public class NoAvailableStorageLocationException extends ApiException {
                 HttpStatus.UNPROCESSABLE_CONTENT,
                 "NO_AVAILABLE_STORAGE_LOCATION"
         );
-
-        System.out.println("Se ejecuto el constructor");
     }
 }
