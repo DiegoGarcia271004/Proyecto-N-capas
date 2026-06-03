@@ -17,6 +17,7 @@ spring:
 
   jwt:
     expiration-minutes: 60
+    cookie-secure: false
 
   jackson:
     deserialization:
