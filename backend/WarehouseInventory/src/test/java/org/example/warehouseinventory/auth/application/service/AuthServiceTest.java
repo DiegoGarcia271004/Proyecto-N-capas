@@ -11,7 +11,6 @@ import org.example.warehouseinventory.auth.domain.entity.User;
 import org.example.warehouseinventory.auth.infraestructure.repository.UserRepository;
 import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolationException;
 import org.example.warehouseinventory.shared.utils.config.JwtService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
