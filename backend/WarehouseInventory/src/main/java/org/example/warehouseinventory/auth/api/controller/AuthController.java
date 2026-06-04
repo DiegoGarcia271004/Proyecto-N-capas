@@ -1,10 +1,12 @@
 package org.example.warehouseinventory.auth.api.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.warehouseinventory.auth.application.service.AuthService;
 import org.example.warehouseinventory.auth.domain.dto.request.LoginRequest;
 import org.example.warehouseinventory.auth.domain.dto.request.RegisterRequest;
-import org.example.warehouseinventory.auth.domain.dto.response.TokenResponse;
+import org.example.warehouseinventory.auth.domain.dto.response.CsrfTokenResponse;
 import org.example.warehouseinventory.auth.domain.entity.User;
 import org.example.warehouseinventory.auth.infraestructure.repository.UserRepository;
 import org.example.warehouseinventory.shared.api.BaseController;
@@ -27,39 +29,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController extends BaseController {
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<GeneralResponse> login(@Valid @RequestBody LoginRequest req) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.username(), req.password())
-        );
+    public ResponseEntity<GeneralResponse> login(@Valid @RequestBody LoginRequest req, HttpServletResponse res) {
+        String csrfToken = authService.login(req, res);
+        return buildResponse("Login successful", HttpStatus.OK, new CsrfTokenResponse(csrfToken));
+    }
 
-        User user = (User) authentication.getPrincipal();
-        assert user != null;
-        String token = jwtService.generateToken(user);
 
-        return buildResponse("Login successfully", HttpStatus.OK, new TokenResponse(token));
+    @PostMapping("/logout")
+    public ResponseEntity<GeneralResponse> logout(HttpServletResponse res) {
+        authService.logout(res);
+        return buildResponse("Logout successful", HttpStatus.OK, null);
     }
 
     @PostMapping("/register")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GeneralResponse> register(@Valid @RequestBody RegisterRequest req) {
-        if (userRepository.existsByUsername(req.username())) {
-            throw new BusinessRuleViolationException("Username " + req.username() + " is already taken");
-        }
-
-        User user = User.builder()
-                .username(req.username())
-                .password(passwordEncoder.encode(req.password()))
-                .role(req.role())
-                .active(true)
-                .build();
-
-        userRepository.save(user);
-        return buildResponse("User registered successfully", HttpStatus.CREATED, null);
+        return buildResponse("User registered successfully", HttpStatus.CREATED, authService.register(req));
     }
 }

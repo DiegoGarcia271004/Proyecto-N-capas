@@ -25,11 +25,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.http.MediaType.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 
@@ -54,8 +57,9 @@ public class ProductControllerTest {
     @Test
     void createProduct_noToken_return401() throws Exception {
         mockMvc.perform(post("/api/product")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(buildCreateRequest())))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildCreateRequest())))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -63,8 +67,9 @@ public class ProductControllerTest {
     @WithMockUser(roles = "OPERATOR")
     void createProduct_operatorRole_returns403() throws Exception {
         mockMvc.perform(post("/api/product")
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(buildCreateRequest())))
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buildCreateRequest())))
                 .andExpect(status().isForbidden());
     }
 
@@ -74,6 +79,7 @@ public class ProductControllerTest {
         when(productService.createProduct(any())).thenReturn(buildProductResponse());
 
         mockMvc.perform(post("/api/product")
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildCreateRequest())))
                 .andExpect(status().isCreated())
@@ -85,6 +91,7 @@ public class ProductControllerTest {
     @WithMockUser(roles = "ADMIN")
     void createProduct_invalidBody_returns400() throws Exception {
         mockMvc.perform(post("/api/product")
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -98,6 +105,7 @@ public class ProductControllerTest {
                 .thenThrow(new BusinessRuleViolationException("SKU-001"));
 
         mockMvc.perform(post("/api/product")
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildCreateRequest())))
                 .andExpect(status().isUnprocessableContent())
@@ -242,6 +250,7 @@ public class ProductControllerTest {
     void updateProduct_operatorRole_returns403() throws Exception {
         UUID id = UUID.randomUUID();
         mockMvc.perform(put("/api/product/update/{id}", id)
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildUpdateRequest(id))))
                 .andExpect(status().isForbidden());
@@ -254,6 +263,7 @@ public class ProductControllerTest {
         when(productService.updateProduct(eq(id), any())).thenReturn(buildProductResponse());
 
         mockMvc.perform(put("/api/product/update/{id}", id)
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildUpdateRequest(id))))
                 .andExpect(status().isOk())
@@ -268,6 +278,7 @@ public class ProductControllerTest {
                 .thenThrow(new ResourceNotFoundException(id.toString()));
 
         mockMvc.perform(put("/api/product/update/{id}", id)
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildUpdateRequest(id))))
                 .andExpect(status().isNotFound());
@@ -281,6 +292,7 @@ public class ProductControllerTest {
                 .thenThrow(new BusinessRuleViolationException("SKU-TAKEN"));
 
         mockMvc.perform(put("/api/product/update/{id}", id)
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buildUpdateRequest(id))))
                 .andExpect(status().isUnprocessableContent());
@@ -290,7 +302,7 @@ public class ProductControllerTest {
     @Test
     @WithMockUser(roles = "OPERATOR")
     void deactivateProduct_operatorRole_returns403() throws Exception {
-        mockMvc.perform(delete("/api/product/delete/{id}", UUID.randomUUID()))
+        mockMvc.perform(delete("/api/product/delete/{id}", UUID.randomUUID()).with(csrf()))
                 .andExpect(status().isForbidden());
     }
 
@@ -300,7 +312,7 @@ public class ProductControllerTest {
         UUID id = UUID.randomUUID();
         when(productService.deactivateProduct(id)).thenReturn(buildProductResponse());
 
-        mockMvc.perform(delete("/api/product/delete/{id}", id))
+        mockMvc.perform(delete("/api/product/delete/{id}", id).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Product deactivated successfully"));
     }
@@ -312,7 +324,7 @@ public class ProductControllerTest {
         when(productService.deactivateProduct(id))
                 .thenThrow(new BusinessRuleViolationException("Product is already inactive"));
 
-        mockMvc.perform(delete("/api/product/delete/{id}", id))
+        mockMvc.perform(delete("/api/product/delete/{id}", id).with(csrf()))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("BUSINESS_RULE_VIOLATION"));
     }
@@ -323,7 +335,7 @@ public class ProductControllerTest {
         UUID id = UUID.randomUUID();
         when(productService.activateProduct(id)).thenReturn(buildProductResponse());
 
-        mockMvc.perform(put("/api/product/activate/{id}", id))
+        mockMvc.perform(put("/api/product/activate/{id}", id).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Product activated successfully"));
     }
@@ -335,7 +347,7 @@ public class ProductControllerTest {
         when(productService.activateProduct(id))
                 .thenThrow(new BusinessRuleViolationException("Product is already active"));
 
-        mockMvc.perform(put("/api/product/activate/{id}", id))
+        mockMvc.perform(put("/api/product/activate/{id}", id).with(csrf()))
                 .andExpect(status().isUnprocessableContent());
     }
 
