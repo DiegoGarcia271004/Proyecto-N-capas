@@ -15,10 +15,38 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  jwt:
-    expiration-minutes: 60
-    cookie-secure: false
-
   jackson:
     deserialization:
       use-big-decimal-for-floats: true
+
+jwt:
+  expiration-minutes: 60
+  cookie-secure: false
+
+# FIXME Descomentar para despliegue en producción
+# springdoc:
+#  swagger-ui:
+#    enabled: false
+#  api-docs:
+#    enabled: false
+
+# FIXME Comentar para despliegue en producción
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+reservation:
+  ttl-minutes: 15
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
