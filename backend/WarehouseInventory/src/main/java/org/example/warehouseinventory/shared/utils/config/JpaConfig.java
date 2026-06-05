@@ -14,22 +14,4 @@ import java.util.Optional;
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
 public class JpaConfig {
-    @Bean
-    public AuditorAware<String> auditorProvider() {
-        return new SecurityAuditorAware();
-    }
-
-    static class SecurityAuditorAware implements AuditorAware<String> {
-
-        @Override
-        public Optional<String> getCurrentAuditor() {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-            if (authentication == null || !authentication.isAuthenticated()) {
-                return Optional.of("System");
-            }
-
-            return Optional.of(authentication.getName());
-        }
-    }
 }
