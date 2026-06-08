@@ -12,6 +12,7 @@ import org.example.warehouseinventory.inventory.domain.exception.InsufficientSto
 import org.example.warehouseinventory.inventory.infrastructure.repository.LotRepository;
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
+import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
 import org.example.warehouseinventory.warehouse.infrastructure.StorageLocationRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
     private final ProductMapper productMapper;
     private final LotRepository lotRepository;
     private final StockMovementRepository stockMovementRepository;
-    private final StorageLocationRepository storageLocationRepository;
+    private final StorageLocationService storageLocationService;
 
     @Override
     @Transactional
@@ -60,8 +61,7 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
             lot.consumeUnits(toConsume);
             lotRepository.save(lot);
 
-            lot.getStorageLocation().removeOccupancy(toConsume);
-            storageLocationRepository.save(lot.getStorageLocation());
+            storageLocationService.releaseOccupancy(lot.getStorageLocation(), toConsume);
 
             StockMovement movement = StockMovement.builder()
                     .lot(lot)

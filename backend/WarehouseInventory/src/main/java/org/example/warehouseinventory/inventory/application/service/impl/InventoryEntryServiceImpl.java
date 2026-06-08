@@ -15,6 +15,9 @@ import org.example.warehouseinventory.inventory.infrastructure.repository.LotRep
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
+import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
+import org.example.warehouseinventory.warehouse.application.service.WarehouseService;
+import org.example.warehouseinventory.warehouse.application.service.impl.WarehouseServiceImpl;
 import org.example.warehouseinventory.warehouse.domain.entity.StorageLocation;
 import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
 import org.example.warehouseinventory.warehouse.domain.exception.NoAvailableStorageLocationException;
@@ -32,8 +35,8 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
 
     private final ProductService productService;
     private final ProductMapper productMapper;
-    private final WarehouseRepository warehouseRepository;
-    private final StorageLocationRepository storageLocationRepository;
+    private final WarehouseService warehouseService;
+    private final StorageLocationService storageLocationService;
     private final LotRepository lotRepository;
     private final StockMovementRepository stockMovementRepository;
     private final InventoryMapper inventoryMapper;
@@ -44,18 +47,11 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
 
         Product _product = productMapper.toEntityResponse(productService.getProductById(request.product()));
 
-        Warehouse _warehouse = warehouseRepository.findById(request.warehouse())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Warehouse not found with id: " + request.warehouse()
-                ));
+        Warehouse _warehouse = warehouseService.getWarehouseById(request.warehouse());
 
-        StorageLocation location = storageLocationRepository
-                .findAvailableByCapacity(request.warehouse(), request.quantity())
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new NoAvailableStorageLocationException(
-                        _warehouse.getId(), request.quantity(), storageLocationRepository.getCapacityAvailableByWarehouse(_warehouse.getId()))
-                );
+        StorageLocation location = storageLocationService.findAvailableStorageLocation(
+                request.warehouse(), request.quantity()
+        );
 
         Lot lot = Lot.builder()
                 .product(_product)
@@ -71,7 +67,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
         lotRepository.save(lot);
 
         location.addOccupancy(request.quantity());
-        storageLocationRepository.save(location);
+        storageLocationService.updateOccupancy(location, request.quantity());
 
         String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
                 .getAuthentication()).getName();

@@ -8,7 +8,7 @@ spring:
     password: ${DB_PASSWORD}
 
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
     properties:
@@ -21,3 +21,32 @@ spring:
 
 jwt:
   expiration-minutes: 60
+  cookie-secure: false
+
+# FIXME Descomentar para despliegue en producción
+# springdoc:
+#  swagger-ui:
+#    enabled: false
+#  api-docs:
+#    enabled: false
+
+# FIXME Comentar para despliegue en producción
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+reservation:
+  ttl-minutes: 15
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+

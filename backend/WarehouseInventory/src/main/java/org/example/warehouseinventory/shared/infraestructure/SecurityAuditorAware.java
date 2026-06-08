@@ -14,6 +14,7 @@ public class SecurityAuditorAware implements AuditorAware<String> {
     public Optional<String> getCurrentAuditor() {
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
                 .filter(Authentication::isAuthenticated)
-                .map(Authentication::getName);
+                .map(Authentication::getName)
+                .or(() -> Optional.of("system"));
     }
 }
