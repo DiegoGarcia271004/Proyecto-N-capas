@@ -13,7 +13,6 @@ import org.example.warehouseinventory.inventory.infrastructure.repository.LotRep
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
 import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
-import org.example.warehouseinventory.warehouse.infrastructure.StorageLocationRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 

@@ -13,16 +13,11 @@ import org.example.warehouseinventory.inventory.domain.entity.Lot;
 import org.example.warehouseinventory.inventory.domain.entity.StockMovement;
 import org.example.warehouseinventory.inventory.infrastructure.repository.LotRepository;
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
-import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
 import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
 import org.example.warehouseinventory.warehouse.application.service.WarehouseService;
-import org.example.warehouseinventory.warehouse.application.service.impl.WarehouseServiceImpl;
 import org.example.warehouseinventory.warehouse.domain.entity.StorageLocation;
 import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
-import org.example.warehouseinventory.warehouse.domain.exception.NoAvailableStorageLocationException;
-import org.example.warehouseinventory.warehouse.infrastructure.StorageLocationRepository;
-import org.example.warehouseinventory.warehouse.infrastructure.WarehouseRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -65,8 +60,6 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 .build();
 
         lotRepository.save(lot);
-
-        location.addOccupancy(request.quantity());
         storageLocationService.updateOccupancy(location, request.quantity());
 
         String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
