@@ -2,7 +2,13 @@ package org.example.warehouseinventory.shared.utils.config;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,27 +33,79 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    public OncePerRequestFilter cookieTokenFilter() {
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                            @NonNull HttpServletResponse response,
+                                            @NonNull FilterChain filterChain)
+                    throws ServletException, IOException
+            {
+
+                String path = request.getRequestURI();
+                if (path.startsWith("/api/auth/")) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                Cookie[] cookies = request.getCookies();
+                if (cookies != null) {
+                    for (Cookie cookie : cookies) {
+                        if ("access_token".equals(cookie.getName())) {
+                            String token = cookie.getValue();
+                            HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+                                @Override
+                                public String getHeader(String name) {
+                                    if ("Authorization".equalsIgnoreCase(name)) {
+                                        return "Bearer " + token;
+                                    }
+                                    return super.getHeader(name);
+                                }
+                            };
+                            filterChain.doFilter(wrapper, response);
+                            return;
+                        }
+                    }
+                }
+
+                filterChain.doFilter(request, response);
+            }
+        };
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/logout"
+                        ))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
+                .addFilterBefore(cookieTokenFilter(),
+                        UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/login",
@@ -57,7 +115,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.decoder(jwtDecoder))
+                        .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(authEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler()))
                 .exceptionHandling(ex -> ex
@@ -81,8 +139,6 @@ public class SecurityConfig {
 
         return converter;
     }
-
-    
 
     @Bean
     public KeyPair keyPair() {

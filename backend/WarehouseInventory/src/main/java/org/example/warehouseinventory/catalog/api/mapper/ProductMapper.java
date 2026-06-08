@@ -21,6 +21,22 @@ public class ProductMapper {
                 .reorderPoint(req.reorderPoint())
                 .productCategory(req.category())
                 .storageRequirement(req.requirements())
+                .active(true)
+                .build();
+    }
+
+    public Product toEntityResponse(ProductResponse res) {
+        return Product.builder()
+                .id(res.id())
+                .sku(res.sku())
+                .name(res.name())
+                .dimensions(res.dimensions())
+                .weight(res.weight())
+                .minStockLevel(res.minStockLevel())
+                .reorderPoint(res.reorderPoint())
+                .productCategory(res.category())
+                .storageRequirement(res.storageRequirement())
+                .active(res.active())
                 .build();
     }
 
