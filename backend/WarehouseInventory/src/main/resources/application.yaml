@@ -2,6 +2,9 @@ spring:
   application:
     name: WarehouseInventory
 
+  profiles:
+    active: dev
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
@@ -16,21 +19,15 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   jackson:
+    default-property-inclusion: non_null
     deserialization:
-      use-big-decimal-for-floats: true
+      fail-on-unknown-properties: false
+    use-big-decimal-for-floats: true
 
 jwt:
   expiration-minutes: 60
   cookie-secure: false
 
-# FIXME Descomentar para despliegue en producción
-# springdoc:
-#  swagger-ui:
-#    enabled: false
-#  api-docs:
-#    enabled: false
-
-# FIXME Comentar para despliegue en producción
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -50,3 +47,8 @@ management:
     health:
       show-details: when_authorized
 
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never

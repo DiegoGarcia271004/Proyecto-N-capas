@@ -5,8 +5,10 @@ import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,5 +23,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query(value = "SELECT * FROM product WHERE id = :id", nativeQuery = true)
     Optional<Product> findByIdIncludingInactive(@Param("id") UUID id);
+
+    @Query(value = "SELECT * FROM product", nativeQuery = true)
+    List<Product> findAllIncludingInactive();
+
+    @Query(value = "SELECT * FROM product WHERE sku = :sku", nativeQuery = true)
+    Optional<Product> findBySkuIncludingInactive(@Param("sku") String sku);
 
 }

@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,8 +36,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.*;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -44,11 +45,15 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${app.csrf-enabled:true}")
+    private boolean csrfEnabled;
 
     @Bean
     public OncePerRequestFilter cookieTokenFilter() {
@@ -70,16 +75,7 @@ public class SecurityConfig {
                 if (cookies != null) {
                     for (Cookie cookie : cookies) {
                         if ("access_token".equals(cookie.getName())) {
-                            String token = cookie.getValue();
-                            HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
-                                @Override
-                                public String getHeader(String name) {
-                                    if ("Authorization".equalsIgnoreCase(name)) {
-                                        return "Bearer " + token;
-                                    }
-                                    return super.getHeader(name);
-                                }
-                            };
+                            HttpServletRequestWrapper wrapper = getHttpServletRequestWrapper(request, cookie);
                             filterChain.doFilter(wrapper, response);
                             return;
                         }
@@ -88,19 +84,37 @@ public class SecurityConfig {
 
                 filterChain.doFilter(request, response);
             }
+
+            private @NonNull HttpServletRequestWrapper getHttpServletRequestWrapper(@NonNull HttpServletRequest request, Cookie cookie) {
+                String token = cookie.getValue();
+                return new HttpServletRequestWrapper(request) {
+                    @Override
+                    public String getHeader(String name) {
+                        if ("Authorization".equalsIgnoreCase(name)) {
+                            return "Bearer " + token;
+                        }
+                        return super.getHeader(name);
+                    }
+                };
+            }
         };
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder) {
+        if (csrfEnabled) {
+            http.csrf(csrf -> csrf
+                    .csrfTokenRepository(csrfTokenRepository())
+                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                    .ignoringRequestMatchers(
+                            "/api/auth/login",
+                            "/api/auth/logout"
+                    ));
+        } else {
+            http.csrf(AbstractHttpConfigurer::disable);
+        }
+
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .ignoringRequestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/logout"
-                        ))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -189,6 +203,11 @@ public class SecurityConfig {
                     "{\"code\": \"UNAUTHORIZED\", \"message\": \"Authentication is required\"}");
         };
 
+    }
+
+    @Bean
+    public CsrfTokenRepository csrfTokenRepository() {
+        return CookieCsrfTokenRepository.withHttpOnlyFalse();
     }
 
     private AccessDeniedHandler accessDeniedHandler() {

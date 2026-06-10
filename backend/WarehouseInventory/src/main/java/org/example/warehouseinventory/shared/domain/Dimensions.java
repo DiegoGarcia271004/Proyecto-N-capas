@@ -26,6 +26,7 @@ public class Dimensions {
     @Column(name = "dim_depth")
     private BigDecimal depth;
 
+    @Column(name = "dimension_unit")
     @Enumerated(EnumType.STRING)
     private DimensionUnit unit;
 
