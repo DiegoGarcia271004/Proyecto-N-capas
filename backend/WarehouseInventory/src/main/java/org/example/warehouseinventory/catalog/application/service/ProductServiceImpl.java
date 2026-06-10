@@ -23,9 +23,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse createProduct(CreateProductRequest req) {
-        if (productRepository.existsBySku(req.sku())) {
-            throw new BusinessRuleViolationException("SKU " + req.sku() + " already exists for another product");
-        }
+        productRepository.findBySkuIncludingInactive(req.sku()).ifPresent(existing -> {
+            throw new BusinessRuleViolationException("SKU " + req.sku() + " already exists.");
+        });
 
         Product p = productMapper.toEntityCreate(req);
 
@@ -56,7 +56,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return productMapper.toDtoList(productRepository.findAll());
+        return productMapper.toDtoList(productRepository.findAllIncludingInactive());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
 
-        productRepository.findBySku(req.sku()).ifPresent(existing -> {
+        productRepository.findBySkuIncludingInactive(req.sku()).ifPresent(existing -> {
             if (!existing.getId().equals(id)) {
                 throw new BusinessRuleViolationException("SKU " + req.sku() + " already exists for another product");
             }
@@ -91,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse activateProduct(UUID id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdIncludingInactive(id)
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
         product.activate();
         return productMapper.toDto(productRepository.save(product));
