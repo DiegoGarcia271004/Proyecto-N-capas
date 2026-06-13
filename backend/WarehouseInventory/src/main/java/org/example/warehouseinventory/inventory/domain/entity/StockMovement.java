@@ -2,6 +2,7 @@ package org.example.warehouseinventory.inventory.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.warehouseinventory.shared.domain.AuditableEntity;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
 
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 
-public class StockMovement {
+public class StockMovement extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,12 +32,6 @@ public class StockMovement {
 
     @Column(nullable = false)
     private Integer quantity;
-
-    @Column(nullable = false)
-    private String performedBy;
-
-    @Column(nullable = false)
-    private LocalDateTime occurredAt;
 
     private String notes;
 
