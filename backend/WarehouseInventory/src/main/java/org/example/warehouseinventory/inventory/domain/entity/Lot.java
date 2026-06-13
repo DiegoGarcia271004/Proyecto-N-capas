@@ -59,4 +59,18 @@ public class Lot extends AuditableEntity {
         this.availableQuantity -= units;
     }
 
+    public static Lot create(Product product, Warehouse warehouse, StorageLocation location,
+                             String lotNumber, Integer quantity, LocalDate expirationDate) {
+        Lot lot = new Lot();
+        lot.product = product;
+        lot.warehouse = warehouse;
+        lot.storageLocation = location;
+        lot.lotNumber = lotNumber;
+        lot.quantity = quantity;
+        lot.availableQuantity = quantity;
+        lot.expirationDate = expirationDate;
+        lot.receivedAt = LocalDateTime.now();
+        return lot;
+    }
+
 }

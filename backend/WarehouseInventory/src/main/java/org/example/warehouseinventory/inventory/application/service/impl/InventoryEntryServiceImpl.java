@@ -48,16 +48,13 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 request.warehouse(), request.quantity()
         );
 
-        Lot lot = Lot.builder()
-                .product(_product)
-                .warehouse(_warehouse)
-                .storageLocation(location)
-                .lotNumber(request.lotNumber())
-                .quantity(request.quantity())
-                .availableQuantity(request.quantity())
-                .expirationDate(request.expirationDate())
-                .receivedAt(LocalDateTime.now())
-                .build();
+        Lot lot = Lot.create(
+                _product,
+                _warehouse,
+                location,
+                request.lotNumber(),
+                request.quantity(),
+                request.expirationDate());
 
         lotRepository.save(lot);
         storageLocationService.updateOccupancy(location, request.quantity());

@@ -57,6 +57,20 @@ public class Product extends AuditableEntity {
         active = true;
     }
 
+    public static Product create(String sku, String name, Dimensions dimensions, Weight weight, Integer minStockLevel,
+                              Integer reorderPoint, ProductCategory productCategory, StorageRequirement storageRequirement) {
+        Product product = new Product();
+        product.sku = sku;
+        product.name = name;
+        product.productCategory = productCategory;
+        product.storageRequirement = storageRequirement;
+        product.minStockLevel = minStockLevel;
+        product.reorderPoint = reorderPoint;
+        product.weight = weight;
+        product.active = true;
+        product.dimensions = dimensions;
+        return product;
+    }
 
     public void update(String sku, String name, ProductCategory category,
                        StorageRequirement storageRequirement, Integer minStockLevel,
