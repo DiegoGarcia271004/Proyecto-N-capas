@@ -66,8 +66,6 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
                     .lot(lot)
                     .type(MovementType.EXIT)
                     .quantity(toConsume)
-                    .performedBy(performedBy)
-                    .occurredAt(LocalDateTime.now())
                     .notes(null)
                     .build();
 

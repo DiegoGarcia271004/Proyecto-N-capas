@@ -7,7 +7,6 @@ import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class ProductMapper {
@@ -22,21 +21,6 @@ public class ProductMapper {
                 .productCategory(req.category())
                 .storageRequirement(req.requirements())
                 .active(true)
-                .build();
-    }
-
-    public Product toEntityResponse(ProductResponse res) {
-        return Product.builder()
-                .id(res.id())
-                .sku(res.sku())
-                .name(res.name())
-                .dimensions(res.dimensions())
-                .weight(res.weight())
-                .minStockLevel(res.minStockLevel())
-                .reorderPoint(res.reorderPoint())
-                .productCategory(res.category())
-                .storageRequirement(res.storageRequirement())
-                .active(res.active())
                 .build();
     }
 

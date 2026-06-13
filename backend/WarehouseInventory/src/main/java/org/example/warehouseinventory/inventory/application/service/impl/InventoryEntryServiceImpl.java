@@ -40,7 +40,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
     @Transactional
     public LotResponse registerEntry(InventoryEntryRequest request) {
 
-        Product _product = productMapper.toEntityResponse(productService.getProductById(request.product()));
+        Product _product = productService.getProductEntityById(request.product());
 
         Warehouse _warehouse = warehouseService.getWarehouseById(request.warehouse());
 
@@ -69,8 +69,6 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 .lot(lot)
                 .type(MovementType.ENTRY)
                 .quantity(request.quantity())
-                .performedBy(performedBy)
-                .occurredAt(LocalDateTime.now())
                 .notes(null)
                 .build();
 
