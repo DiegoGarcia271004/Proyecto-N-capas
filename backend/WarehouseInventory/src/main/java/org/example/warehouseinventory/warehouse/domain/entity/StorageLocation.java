@@ -48,4 +48,15 @@ public class StorageLocation extends AuditableEntity {
         this.currentOccupancy = Math.max(0, this.currentOccupancy - units);
         this.available = this.currentOccupancy < this.maxCapacity;
     }
+
+    public static StorageLocation create(Warehouse warehouse, String code, String zone, Integer maxCapacity, Integer currentOccupancy) {
+        StorageLocation storageLocation = new StorageLocation();
+        storageLocation.warehouse = warehouse;
+        storageLocation.code = code;
+        storageLocation.zone = zone;
+        storageLocation.maxCapacity = maxCapacity;
+        storageLocation.currentOccupancy = currentOccupancy;
+        storageLocation.available = true;
+        return storageLocation;
+    }
 }

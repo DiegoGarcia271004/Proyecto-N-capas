@@ -1,6 +1,7 @@
 package org.example.warehouseinventory.catalog.application.service;
 
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
+import org.example.warehouseinventory.catalog.application.service.impl.ProductServiceImpl;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.response.ProductResponse;

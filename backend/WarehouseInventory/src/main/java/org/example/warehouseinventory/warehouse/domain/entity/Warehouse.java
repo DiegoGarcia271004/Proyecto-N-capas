@@ -47,4 +47,11 @@ public class Warehouse extends AuditableEntity {
         this.address = address;
     }
 
+    public static Warehouse create(String name, String address) {
+        Warehouse warehouse = new Warehouse();
+        warehouse.name = name;
+        warehouse.address = address;
+        warehouse.active = true;
+        return warehouse;
+    }
 }
