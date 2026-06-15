@@ -42,7 +42,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
     @Transactional
     public LotResponse registerEntry(InventoryEntryRequest request) {
 
-        Product _product = productMapper.toEntityResponse(productService.getProductById(request.product()));
+        Product _product = productService.getProductEntityById(request.product());
 
         Warehouse _warehouse = warehouseService.getWarehouseById(request.warehouse());
 
@@ -50,31 +50,21 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 request.warehouse(), request.quantity()
         );
 
-        Lot lot = Lot.builder()
-                .product(_product)
-                .warehouse(_warehouse)
-                .storageLocation(location)
-                .lotNumber(request.lotNumber())
-                .quantity(request.quantity())
-                .availableQuantity(request.quantity())
-                .expirationDate(request.expirationDate())
-                .receivedAt(LocalDateTime.now())
-                .build();
+        Lot lot = Lot.create(
+                _product,
+                _warehouse,
+                location,
+                request.lotNumber(),
+                request.quantity(),
+                request.expirationDate());
 
         lotRepository.save(lot);
         storageLocationService.updateOccupancy(location, request.quantity());
 
-        String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
-                .getAuthentication()).getName();
-
-        StockMovement movement = StockMovement.builder()
-                .lot(lot)
-                .type(MovementType.ENTRY)
-                .quantity(request.quantity())
-                .performedBy(performedBy)
-                .occurredAt(LocalDateTime.now())
-                .notes(null)
-                .build();
+        StockMovement movement = StockMovement.create(lot,
+                MovementType.ENTRY,
+                request.quantity(),
+                null);
 
         stockMovementRepository.save(movement);
 

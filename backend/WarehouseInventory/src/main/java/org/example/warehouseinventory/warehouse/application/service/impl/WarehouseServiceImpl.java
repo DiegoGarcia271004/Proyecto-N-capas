@@ -6,6 +6,7 @@ import org.example.warehouseinventory.warehouse.application.service.WarehouseSer
 import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
 import org.example.warehouseinventory.warehouse.infrastructure.WarehouseRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     private final WarehouseRepository warehouseRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Warehouse getWarehouseById(UUID id) {
 
         return warehouseRepository.findById(id)
