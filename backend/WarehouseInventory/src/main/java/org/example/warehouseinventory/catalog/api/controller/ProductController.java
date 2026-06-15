@@ -3,8 +3,7 @@ package org.example.warehouseinventory.catalog.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.warehouseinventory.catalog.application.service.ProductService;
-import org.example.warehouseinventory.catalog.application.service.ProductServiceImpl;
+import org.example.warehouseinventory.catalog.application.service.impl.ProductServiceImpl;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
 import org.example.warehouseinventory.shared.api.BaseController;
@@ -14,9 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController

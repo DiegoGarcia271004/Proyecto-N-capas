@@ -33,7 +33,7 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
     @Transactional
     public void consumeStock(StockConsumptionRequest request) {
 
-        productService.getProductById(request.product());
+        productService.getProductEntityById(request.product());
 
         List<Lot> lots = lotRepository.findAvailableLotsFifo(request.product(), request.warehouse());
 

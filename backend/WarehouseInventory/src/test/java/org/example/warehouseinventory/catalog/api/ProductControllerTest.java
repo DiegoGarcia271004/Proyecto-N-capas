@@ -2,11 +2,10 @@ package org.example.warehouseinventory.catalog.api;
 
 import org.example.warehouseinventory.auth.application.service.UserDetailsServiceImpl;
 import org.example.warehouseinventory.catalog.api.controller.ProductController;
-import org.example.warehouseinventory.catalog.application.service.ProductServiceImpl;
+import org.example.warehouseinventory.catalog.application.service.impl.ProductServiceImpl;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.response.ProductResponse;
-import org.example.warehouseinventory.shared.api.exception.ApiException;
 import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolationException;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.Dimensions;
@@ -32,9 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.http.MediaType.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
 
 import java.math.BigDecimal;
 import java.util.List;

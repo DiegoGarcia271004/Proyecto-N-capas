@@ -1,6 +1,7 @@
-package org.example.warehouseinventory.catalog.application.service;
+package org.example.warehouseinventory.catalog.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.warehouseinventory.catalog.application.service.ProductService;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.response.ProductResponse;
@@ -11,6 +12,7 @@ import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolation
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
+    @Transactional
     public ProductResponse createProduct(CreateProductRequest req) {
         productRepository.findBySkuIncludingInactive(req.sku()).ifPresent(existing -> {
             throw new BusinessRuleViolationException("SKU " + req.sku() + " already exists.");
@@ -33,17 +36,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Product getProductEntityById(UUID id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID id) {
         return productMapper.toDto(getProductEntityById(id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductBySku(String sku) {
         return productMapper.toDto(productRepository.findBySku(sku).orElseThrow(
                 () -> new ResourceNotFoundException("A product with this SKU does not exists")
@@ -51,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponse> getProductsByCategory(ProductCategory category) {
         return productMapper.toDtoList(
                 productRepository.findByProductCategory(category)
@@ -58,11 +65,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponse> getAllProducts() {
         return productMapper.toDtoList(productRepository.findAllIncludingInactive());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductIncludingInactive(UUID id) {
         return productMapper.toDto(
                 productRepository.findByIdIncludingInactive(id).orElseThrow(() -> new ResourceNotFoundException("A product with this ID does not exists"))
@@ -70,6 +79,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponse updateProduct(UUID id, UpdateProductRequest req) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
@@ -85,6 +95,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponse deactivateProduct(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
@@ -93,6 +104,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponse activateProduct(UUID id) {
         Product product = productRepository.findByIdIncludingInactive(id)
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
