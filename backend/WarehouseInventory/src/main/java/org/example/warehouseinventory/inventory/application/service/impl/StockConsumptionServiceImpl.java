@@ -25,7 +25,6 @@ import java.util.Objects;
 public class StockConsumptionServiceImpl implements StockConsumptionService {
 
     private final ProductService productService;
-    private final ProductMapper productMapper;
     private final LotRepository lotRepository;
     private final StockMovementRepository stockMovementRepository;
     private final StorageLocationService storageLocationService;
@@ -47,9 +46,6 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
                     request.product().toString(), request.quantity(), totalAvailable
             );
 
-        String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
-                .getAuthentication()).getName();
-
         int remaining = request.quantity();
 
         for (Lot lot : lots) {
@@ -62,14 +58,11 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
 
             storageLocationService.releaseOccupancy(lot.getStorageLocation(), toConsume);
 
-            StockMovement movement = StockMovement.builder()
-                    .lot(lot)
-                    .type(MovementType.EXIT)
-                    .quantity(toConsume)
-                    .performedBy(performedBy)
-                    .occurredAt(LocalDateTime.now())
-                    .notes(null)
-                    .build();
+            StockMovement movement = StockMovement.create(
+                    lot,
+                    MovementType.EXIT,
+                    toConsume,
+                    null);
 
             stockMovementRepository.save(movement);
             remaining -= toConsume;

@@ -33,11 +33,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Product getProductEntityById(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
+    }
+
+    @Override
     public ProductResponse getProductById(UUID id) {
-        return productMapper.toDto(
-                productRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"))
-        );
+        return productMapper.toDto(getProductEntityById(id));
     }
 
     @Override

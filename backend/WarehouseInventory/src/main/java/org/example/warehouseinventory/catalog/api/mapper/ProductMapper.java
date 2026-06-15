@@ -7,37 +7,20 @@ import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class ProductMapper {
     public Product toEntityCreate(CreateProductRequest req) {
-        return Product.builder()
-                .sku(req.sku())
-                .name(req.name())
-                .dimensions(req.dimensions())
-                .weight(req.weight())
-                .minStockLevel(req.minStockLevel())
-                .reorderPoint(req.reorderPoint())
-                .productCategory(req.category())
-                .storageRequirement(req.requirements())
-                .active(true)
-                .build();
-    }
-
-    public Product toEntityResponse(ProductResponse res) {
-        return Product.builder()
-                .id(res.id())
-                .sku(res.sku())
-                .name(res.name())
-                .dimensions(res.dimensions())
-                .weight(res.weight())
-                .minStockLevel(res.minStockLevel())
-                .reorderPoint(res.reorderPoint())
-                .productCategory(res.category())
-                .storageRequirement(res.storageRequirement())
-                .active(res.active())
-                .build();
+        return Product.create(
+                    req.sku(),
+                    req.name(),
+                    req.dimensions(),
+                    req.weight(),
+                    req.minStockLevel(),
+                    req.reorderPoint(),
+                    req.category(),
+                    req.requirements()
+                );
     }
 
     public void updateEntity(Product product, UpdateProductRequest req) {
