@@ -14,6 +14,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthController.class)
 @Import(SecurityConfig.class)
+@ActiveProfiles("test")
 class AuthControllerTest {
 
     @Autowired
@@ -45,17 +47,16 @@ class AuthControllerTest {
     // ── POST /api/auth/login ───────────────────────────────────────
 
     @Test
-    void login_validCredentials_returns200WithCsrfToken() throws Exception {
-        when(authService.login(any(), any())).thenReturn("csrf-token-value");
-
+    void login_validCredentials_returns200() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new LoginRequest("admin", "password123"))))
                 .andExpect(status().isOk())
-                .andExpect((ResultMatcher) jsonPath("$.message").value("Login successful"))
-                .andExpect((ResultMatcher) jsonPath("$.data.csrfToken").value("csrf-token-value"));
+                .andExpect(jsonPath("$.message").value("Login successful"));
+
+        verify(authService).login(any(), any());
     }
 
     @Test
@@ -70,8 +71,8 @@ class AuthControllerTest {
 
     @Test
     void login_invalidCredentials_returns401() throws Exception {
-        when(authService.login(any(), any()))
-                .thenThrow(new BadCredentialsException("Bad credentials"));
+        doThrow(new BadCredentialsException("Bad credentials"))
+                .when(authService).login(any(), any());
 
         mockMvc.perform(post("/api/auth/login")
                         .with(csrf())

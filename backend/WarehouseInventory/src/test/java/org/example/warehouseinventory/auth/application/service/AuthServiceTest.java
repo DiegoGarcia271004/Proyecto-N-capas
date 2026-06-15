@@ -47,7 +47,7 @@ public class AuthServiceTest {
     // ── login ──────────────────────────────────────────────────────
 
     @Test
-    void login_validCredentials_setsCookieAndReturnsCsrfToken() {
+    void login_validCredentials_setsTokenCookie() {
         LoginRequest req = new LoginRequest("admin", "password123");
         User user = buildUser();
         Authentication auth = mock(Authentication.class);
@@ -59,9 +59,8 @@ public class AuthServiceTest {
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
         when(jwtService.createTokenCookie("jwt-token")).thenReturn(cookie);
 
-        String csrfToken = authService.login(req, response);
+        authService.login(req, response);
 
-        assertThat(csrfToken).isNotNull();
         verify(response).addCookie(cookie);
         verify(jwtService).generateToken(user);
     }
