@@ -1,4 +1,4 @@
-package org.example.warehouseinventory.catalog.application.service;
+package org.example.warehouseinventory.catalog.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
