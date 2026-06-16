@@ -1,6 +1,6 @@
 package org.example.warehouseinventory.inventory.application.service.impl;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
@@ -38,9 +38,7 @@ public class ProductCostServiceImpl implements ProductCostService {
 
         } else {
 
-            Product _product = productMapper.toEntityResponse(
-                    productService.getProductById(product)
-            );
+            Product _product = productService.getProductEntityById(product);
 
             Warehouse _warehouse = warehouseService.getWarehouseById(warehouse);
 

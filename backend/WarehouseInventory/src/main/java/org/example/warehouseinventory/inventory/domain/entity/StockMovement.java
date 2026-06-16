@@ -15,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 
-public class StockMovement extends AuditableEntity {
+public class StockMovement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -41,12 +41,14 @@ public class StockMovement extends AuditableEntity {
 
     private String notes;
 
-    public static StockMovement create(Lot lot, MovementType type, Integer quantity, String notes) {
+    public static StockMovement create(Lot lot, MovementType type, Integer quantity, String notes, String performedBy) {
         StockMovement movement = new StockMovement();
         movement.lot = lot;
         movement.type = type;
         movement.quantity = quantity;
         movement.notes = notes;
+        movement.performedBy = performedBy;
+        movement.occurredAt = LocalDateTime.now();
         return movement;
     }
 }

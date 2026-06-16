@@ -1,6 +1,6 @@
 package org.example.warehouseinventory.inventory.application.service.impl;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
@@ -56,15 +56,22 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 location,
                 request.lotNumber(),
                 request.quantity(),
-                request.expirationDate());
+                request.expirationDate()
+        );
 
         lotRepository.save(lot);
         storageLocationService.updateOccupancy(location, request.quantity());
 
-        StockMovement movement = StockMovement.create(lot,
+        String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
+                .getAuthentication()).getName();
+
+        StockMovement movement = StockMovement.create(
+                lot,
                 MovementType.ENTRY,
                 request.quantity(),
-                null);
+                "",
+                performedBy
+        );
 
         stockMovementRepository.save(movement);
 

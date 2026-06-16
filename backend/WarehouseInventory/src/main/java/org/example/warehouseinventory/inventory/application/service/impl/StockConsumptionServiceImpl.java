@@ -1,6 +1,6 @@
 package org.example.warehouseinventory.inventory.application.service.impl;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
@@ -65,7 +65,9 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
                     lot,
                     MovementType.EXIT,
                     toConsume,
-                    null);
+                    performedBy,
+                    ""
+            );
 
             stockMovementRepository.save(movement);
             remaining -= toConsume;
