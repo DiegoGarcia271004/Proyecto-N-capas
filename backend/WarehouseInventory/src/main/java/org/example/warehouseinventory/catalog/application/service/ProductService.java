@@ -2,6 +2,7 @@ package org.example.warehouseinventory.catalog.application.service;
 
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
+import org.example.warehouseinventory.catalog.domain.dto.response.LowStockProjection;
 import org.example.warehouseinventory.catalog.domain.dto.response.ProductResponse;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
@@ -21,4 +22,5 @@ public interface ProductService {
     ProductResponse deactivateProduct(UUID id);
     ProductResponse activateProduct(UUID id);
     List<ProductResponse> getAllProducts();
+    List<LowStockProjection> findProductsBelowMinStock();
 }

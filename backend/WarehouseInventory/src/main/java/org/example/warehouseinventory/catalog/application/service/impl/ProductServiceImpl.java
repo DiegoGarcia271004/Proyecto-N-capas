@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
+import org.example.warehouseinventory.catalog.domain.dto.response.LowStockProjection;
 import org.example.warehouseinventory.catalog.domain.dto.response.ProductResponse;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
@@ -110,6 +111,13 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("A product with this id does not exist"));
         product.activate();
         return productMapper.toDto(productRepository.save(product));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LowStockProjection> findProductsBelowMinStock() {
+
+        return productRepository.findProductsBelowMinStock();
     }
 
 }
