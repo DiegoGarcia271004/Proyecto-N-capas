@@ -9,6 +9,7 @@ public interface NotificationService {
 
     List<NotificationResponse> getAll();
     List<NotificationResponse> getUnread();
+    List<NotificationResponse> getActive();
     NotificationResponse markAsRead(UUID id);
 
 }

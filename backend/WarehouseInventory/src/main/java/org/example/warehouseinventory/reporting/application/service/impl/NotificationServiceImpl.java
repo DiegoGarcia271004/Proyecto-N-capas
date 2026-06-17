@@ -32,7 +32,14 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional(readOnly = true)
     public List<NotificationResponse> getUnread() {
 
-        return notificationMapper.toDtoList(notificationRepository.findByReadFalse());
+        return notificationMapper.toDtoList(notificationRepository.findByReadFalseAndResolvedFalse());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getActive() {
+
+        return notificationMapper.toDtoList(notificationRepository.findByResolvedFalse());
     }
 
     @Override

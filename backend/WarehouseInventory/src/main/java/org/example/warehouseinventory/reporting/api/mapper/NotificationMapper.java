@@ -18,6 +18,7 @@ public class NotificationMapper {
                 notification.getRelatedEntityId(),
                 notification.getRelatedEntityType(),
                 notification.getRead(),
+                notification.getResolved(),
                 notification.getCreatedAt()
         );
     }

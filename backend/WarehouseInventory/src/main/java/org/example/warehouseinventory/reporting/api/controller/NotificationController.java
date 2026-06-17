@@ -54,4 +54,15 @@ public class NotificationController extends BaseController {
         );
     }
 
+    @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
+    public ResponseEntity<GeneralResponse> getActive() {
+
+        return buildResponse(
+                "Active notifications retrieved successfully.",
+                HttpStatus.OK,
+                notificationService.getActive()
+        );
+    }
+
 }

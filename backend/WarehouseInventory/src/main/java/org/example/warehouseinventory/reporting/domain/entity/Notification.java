@@ -37,7 +37,13 @@ public class Notification extends AuditableEntity {
     @Column(nullable = false)
     private Boolean read;
 
-    public static Notification create(NotificationType type, String message, UUID relatedEntityId, String relatedEntityType) {
+    @Column(nullable = false)
+    private Integer currentStock;
+
+    @Column(nullable = false)
+    private Boolean resolved;
+
+    public static Notification create(NotificationType type, String message, UUID relatedEntityId, String relatedEntityType, Integer currentStock) {
 
         Notification not = new Notification();
 
@@ -45,13 +51,24 @@ public class Notification extends AuditableEntity {
         not.message = message;
         not.relatedEntityId = relatedEntityId;
         not.relatedEntityType = relatedEntityType;
+        not.currentStock = currentStock;
         not.read = false;
+        not.resolved = false;
 
         return not;
     }
 
     public void markAsRead() {
         this.read = true;
+    }
+
+    public void updateStockAlert(String newMessage, Integer newStock) {
+        this.message = newMessage;
+        this.currentStock = newStock;
+    }
+
+    public void resolve() {
+        this.resolved = true;
     }
 
 }
