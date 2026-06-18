@@ -3,7 +3,7 @@ package org.example.warehouseinventory.catalog.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.warehouseinventory.catalog.application.service.ProductServiceImpl;
+import org.example.warehouseinventory.catalog.application.service.impl.ProductServiceImpl;
 import org.example.warehouseinventory.catalog.domain.dto.request.CreateProductRequest;
 import org.example.warehouseinventory.catalog.domain.dto.request.UpdateProductRequest;
 import org.example.warehouseinventory.shared.api.BaseController;
