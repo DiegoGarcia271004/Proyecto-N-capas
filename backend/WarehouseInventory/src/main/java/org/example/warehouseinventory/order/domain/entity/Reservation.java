@@ -1,14 +1,13 @@
 package org.example.warehouseinventory.order.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.order.domain.enums.ReservationStatus;
 import org.example.warehouseinventory.shared.domain.AuditableEntity;
+import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation extends AuditableEntity {
 
     @Id
@@ -29,11 +28,11 @@ public class Reservation extends AuditableEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    /*
-    * @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    * @JoinColumn(name = "warehouse_id", nullable = false)
-    * private Warehouse warehouse;
-    * */
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    private Warehouse warehouse;
+
 
     @Column(nullable = false)
     private Integer quantity;
@@ -51,5 +50,15 @@ public class Reservation extends AuditableEntity {
 
     public void confirm() {
         this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public static Reservation create(Product product, Warehouse warehouse, Integer quantity, LocalDateTime expiresAt) {
+        Reservation reservation = new Reservation();
+        reservation.product = product;
+        reservation.warehouse = warehouse;
+        reservation.quantity = quantity;
+        reservation.status = ReservationStatus.ACTIVE;
+        reservation.expiresAt = expiresAt;
+        return reservation;
     }
 }
