@@ -48,7 +48,7 @@ class ProductServiceTest {
         Product product = buildProduct("SKU-001");
         ProductResponse expected = buildProductResponse("SKU-001");
 
-        when(productRepository.existsBySku("SKU-001")).thenReturn(false);
+        when(productRepository.findBySkuIncludingInactive("SKU-001")).thenReturn(Optional.empty());
         when(productMapper.toEntityCreate(req)).thenReturn(product);
         when(productRepository.save(product)).thenReturn(product);
         when(productMapper.toDto(product)).thenReturn(expected);
@@ -61,7 +61,8 @@ class ProductServiceTest {
 
     @Test
     void createProduct_duplicateSku_throwsBusinessRuleViolation() {
-        when(productRepository.existsBySku("SKU-001")).thenReturn(true);
+        lenient().when(productRepository.findBySkuIncludingInactive("SKU-001"))
+                .thenReturn(Optional.of(buildProduct("SKU-001")));
 
         assertThatThrownBy(() -> productService.createProduct(buildCreateRequest("SKU-001")))
                 .isInstanceOf(BusinessRuleViolationException.class)
@@ -145,11 +146,11 @@ class ProductServiceTest {
     @Test
     void getAllProducts_returnsAllInactiveProducts() {
         List<Product> products = List.of(buildProduct("SKU-001"));
-        when(productRepository.findAll()).thenReturn(products);
+        when(productRepository.findAllIncludingInactive()).thenReturn(products);
         when(productMapper.toDtoList(products)).thenReturn(List.of(buildProductResponse("SKU-001")));
 
         assertThat(productService.getAllProducts()).hasSize(1);
-        verify(productRepository).findAll();
+        verify(productRepository).findAllIncludingInactive();
     }
 
     // ── getProductIncludingInactive ────────────────────────────────
@@ -181,10 +182,10 @@ class ProductServiceTest {
         Product product = buildProductWithId(id, "SKU-001");
         UpdateProductRequest req = buildUpdateRequest(id, "SKU-001");
 
-        when(productRepository.findById(id)).thenReturn(Optional.of(product));
-        when(productRepository.findBySku("SKU-001")).thenReturn(Optional.of(product));
-        when(productRepository.save(product)).thenReturn(product);
-        when(productMapper.toDto(product)).thenReturn(buildProductResponse("SKU-001"));
+        lenient().when(productRepository.findById(id)).thenReturn(Optional.of(product));
+        lenient().when(productRepository.findBySku("SKU-001")).thenReturn(Optional.of(product));
+        lenient().when(productRepository.save(product)).thenReturn(product);
+        lenient().when(productMapper.toDto(product)).thenReturn(buildProductResponse("SKU-001"));
 
         ProductResponse result = productService.updateProduct(id, req);
 
