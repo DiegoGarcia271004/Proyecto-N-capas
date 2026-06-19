@@ -59,6 +59,20 @@ public class Lot extends AuditableEntity {
         this.availableQuantity -= units;
     }
 
+    public void releaseUnits(int units) {
+        if (this.availableQuantity + units > this.quantity)
+            throw new IllegalArgumentException("Cannot release more units than were consumed");
+
+        this.availableQuantity += units;
+    }
+
+    public void confirmConsumption(int units) {
+        int reserved = this.quantity - this.availableQuantity;
+        if (units > reserved)
+            throw new IllegalArgumentException("Cannot confirm more units than reserved");
+        this.quantity -= units;
+    }
+
     public static Lot create(Product product, Warehouse warehouse, StorageLocation location,
                              String lotNumber, Integer quantity, LocalDate expirationDate) {
         Lot lot = new Lot();
