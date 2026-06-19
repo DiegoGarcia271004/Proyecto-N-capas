@@ -19,7 +19,6 @@ public class ReservationMapper {
                 reservation.getProduct().getSku(),
                 reservation.getQuantity(),
                 reservation.getStatus(),
-                reservation.getExpiresAt(),
                 reservation.getExpiresAt()
         );
     }

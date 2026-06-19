@@ -2,7 +2,6 @@ package org.example.warehouseinventory.order.api.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.warehouseinventory.order.api.mapper.ReservationMapper;
 import org.example.warehouseinventory.order.application.service.ReservationService;
 import org.example.warehouseinventory.order.domain.dto.request.ReservationRequest;
 import org.example.warehouseinventory.shared.api.BaseController;
@@ -45,7 +44,7 @@ public class ReservationController extends BaseController {
     }
 
     @PutMapping("/release/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', WAREHOUSE_MANAGER', 'OPERATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER', 'OPERATOR')")
     public ResponseEntity<GeneralResponse> releaseReservation(@PathVariable UUID id) {
         return buildResponse(
                 "Reservation released successfully",

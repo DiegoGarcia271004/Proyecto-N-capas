@@ -12,7 +12,6 @@ public record ReservationResponse(
         String productSku,
         Integer quantity,
         ReservationStatus status,
-        LocalDateTime expiresAt,
-        LocalDateTime createdAt
+        LocalDateTime expiresAt
 ) {
 }
