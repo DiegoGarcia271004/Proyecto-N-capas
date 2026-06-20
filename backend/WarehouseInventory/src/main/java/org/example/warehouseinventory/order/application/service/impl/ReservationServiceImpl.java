@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class   ReservationServiceImpl implements ReservationService {
+public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ReservationLotRepository reservationLotRepository;

@@ -28,7 +28,6 @@ public class StockReservationServiceImpl implements StockReservationService {
     private final StockMovementRepository stockMovementRepository;
     private final StorageLocationService storageLocationService;
 
-
     @Override
     @Transactional
     public List<LotReservationDetail> reserveStock(UUID productId, UUID warehouseId, Integer quantity) {
