@@ -65,8 +65,8 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
                     lot,
                     MovementType.EXIT,
                     toConsume,
-                    performedBy,
-                    ""
+                    "",
+                    performedBy
             );
 
             stockMovementRepository.save(movement);

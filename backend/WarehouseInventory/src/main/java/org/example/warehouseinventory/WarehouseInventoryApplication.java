@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -20,10 +21,9 @@ public class WarehouseInventoryApplication {
 
     //temporal code for have a default admin
     @Bean
-    CommandLineRunner initAdmin(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder
-    ) {
+    @Profile("!test")
+    CommandLineRunner initAdmin(UserRepository userRepository,
+                                PasswordEncoder passwordEncoder) {
         return args -> {
             if (!userRepository.existsByUsername("admin")) {
                 User admin = User.builder()
