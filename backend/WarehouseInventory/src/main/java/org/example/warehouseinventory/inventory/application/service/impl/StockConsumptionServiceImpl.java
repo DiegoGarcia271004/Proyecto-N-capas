@@ -46,9 +46,6 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
                     request.product().toString(), request.quantity(), totalAvailable
             );
 
-        String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
-                .getAuthentication()).getName();
-
         int remaining = request.quantity();
 
         for (Lot lot : lots) {
@@ -65,8 +62,7 @@ public class StockConsumptionServiceImpl implements StockConsumptionService {
                     lot,
                     MovementType.EXIT,
                     toConsume,
-                    "",
-                    performedBy
+                    ""
             );
 
             stockMovementRepository.save(movement);

@@ -81,11 +81,8 @@ public class StockReservationServiceImpl implements StockReservationService {
 
             storageLocationService.releaseOccupancy(lot.getStorageLocation(), detail.quantity());
 
-            String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
-                    .getAuthentication()).getName();
-
             StockMovement movement = StockMovement.create(
-                    lot, MovementType.EXIT, detail.quantity(), null, performedBy);
+                    lot, MovementType.EXIT, detail.quantity(), "");
             stockMovementRepository.save(movement);
         });
     }

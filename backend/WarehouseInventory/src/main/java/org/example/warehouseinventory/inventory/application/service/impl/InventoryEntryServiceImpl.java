@@ -62,15 +62,11 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
         lotRepository.save(lot);
         storageLocationService.updateOccupancy(location, request.quantity());
 
-        String performedBy = Objects.requireNonNull(SecurityContextHolder.getContext()
-                .getAuthentication()).getName();
-
         StockMovement movement = StockMovement.create(
                 lot,
                 MovementType.ENTRY,
                 request.quantity(),
-                "",
-                performedBy
+                ""
         );
 
         stockMovementRepository.save(movement);
