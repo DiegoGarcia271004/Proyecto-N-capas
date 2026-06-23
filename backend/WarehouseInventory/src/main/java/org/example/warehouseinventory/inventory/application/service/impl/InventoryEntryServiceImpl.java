@@ -1,12 +1,13 @@
 package org.example.warehouseinventory.inventory.application.service.impl;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.inventory.api.mapper.InventoryMapper;
 import org.example.warehouseinventory.inventory.application.service.InventoryEntryService;
+import org.example.warehouseinventory.inventory.application.service.ProductCostService;
 import org.example.warehouseinventory.inventory.domain.dto.request.InventoryEntryRequest;
 import org.example.warehouseinventory.inventory.domain.dto.response.LotResponse;
 import org.example.warehouseinventory.inventory.domain.entity.Lot;
@@ -35,6 +36,7 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
     private final LotRepository lotRepository;
     private final StockMovementRepository stockMovementRepository;
     private final InventoryMapper inventoryMapper;
+    private final ProductCostService productCostService;
 
     @Override
     @Transactional
@@ -54,17 +56,28 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
                 location,
                 request.lotNumber(),
                 request.quantity(),
-                request.expirationDate());
+                request.expirationDate()
+        );
 
         lotRepository.save(lot);
         storageLocationService.updateOccupancy(location, request.quantity());
 
-        StockMovement movement = StockMovement.create(lot,
+        StockMovement movement = StockMovement.create(
+                lot,
                 MovementType.ENTRY,
                 request.quantity(),
-                null);
+                ""
+        );
 
         stockMovementRepository.save(movement);
+
+        productCostService.recalculate(
+                request.product(),
+                request.warehouse(),
+                request.unitCost(),
+                request.quantity()
+        );
+
         return inventoryMapper.toDto(lot);
     }
 

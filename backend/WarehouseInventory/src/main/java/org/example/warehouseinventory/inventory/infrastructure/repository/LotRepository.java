@@ -21,4 +21,12 @@ public interface LotRepository extends JpaRepository<Lot, UUID> {
             nativeQuery = true)
     List<Lot> findAvailableLotsFifo(@Param("productId") UUID productId,
                                     @Param("warehouseId") UUID warehouseId);
+
+    @Query(value = """
+        SELECT * FROM lot
+        WHERE available_quantity > 0
+        AND expiration_date IS NOT NULL
+        AND expiration_date < CURRENT_DATE
+        """, nativeQuery = true)
+    List<Lot> findExpiredLotsWithStock();
 }

@@ -8,16 +8,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
+@EnableScheduling
 public class WarehouseInventoryApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(WarehouseInventoryApplication.class, args);
     }
 
-    //codigo temporal para tener un admin por defecto
+    //temporal code for have a default admin
     @Bean
     @Profile("!test")
     CommandLineRunner initAdmin(UserRepository userRepository,
@@ -35,5 +37,4 @@ public class WarehouseInventoryApplication {
             }
         };
     }
-
 }

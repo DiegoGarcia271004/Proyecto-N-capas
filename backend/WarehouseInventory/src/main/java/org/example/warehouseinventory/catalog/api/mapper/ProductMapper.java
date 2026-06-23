@@ -7,6 +7,7 @@ import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class ProductMapper {

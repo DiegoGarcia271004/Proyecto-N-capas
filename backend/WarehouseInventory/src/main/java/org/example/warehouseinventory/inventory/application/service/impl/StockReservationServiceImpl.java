@@ -10,11 +10,14 @@ import org.example.warehouseinventory.inventory.infrastructure.repository.LotRep
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
+import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -23,7 +26,7 @@ public class StockReservationServiceImpl implements StockReservationService {
 
     private final LotRepository lotRepository;
     private final StockMovementRepository stockMovementRepository;
-
+    private final StorageLocationService storageLocationService;
 
     @Override
     @Transactional
@@ -75,8 +78,10 @@ public class StockReservationServiceImpl implements StockReservationService {
             lot.confirmConsumption(detail.quantity());
             lotRepository.save(lot);
 
+            storageLocationService.releaseOccupancy(lot.getStorageLocation(), detail.quantity());
+
             StockMovement movement = StockMovement.create(
-                    lot, MovementType.EXIT, detail.quantity(), null);
+                    lot, MovementType.EXIT, detail.quantity(), "");
             stockMovementRepository.save(movement);
         });
     }

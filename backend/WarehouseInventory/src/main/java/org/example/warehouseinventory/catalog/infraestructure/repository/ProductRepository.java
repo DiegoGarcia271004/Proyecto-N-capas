@@ -1,5 +1,6 @@
 package org.example.warehouseinventory.catalog.infraestructure.repository;
 
+import org.example.warehouseinventory.catalog.domain.dto.response.LowStockProjection;
 import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,5 +30,19 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query(value = "SELECT * FROM product WHERE sku = :sku", nativeQuery = true)
     Optional<Product> findBySkuIncludingInactive(@Param("sku") String sku);
+
+    @Query(value = """
+        SELECT p.id as productId, p.sku as sku, p.product_name as name,
+               COALESCE(SUM(l.available_quantity), 0) as currentStock,
+               p.min_stock_level as minStockLevel
+        FROM product p
+        LEFT JOIN lot l ON l.product = p.id
+            AND l.available_quantity > 0
+            AND (l.expiration_date IS NULL OR l.expiration_date >= CURRENT_DATE)
+        WHERE p.active = true
+        GROUP BY p.id, p.sku, p.product_name, p.min_stock_level
+        HAVING COALESCE(SUM(l.available_quantity), 0) < p.min_stock_level
+        """, nativeQuery = true)
+    List<LowStockProjection> findProductsBelowMinStock();
 
 }
