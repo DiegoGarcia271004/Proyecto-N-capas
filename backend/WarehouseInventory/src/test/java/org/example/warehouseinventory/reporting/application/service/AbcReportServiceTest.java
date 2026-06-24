@@ -1,71 +1,55 @@
-package org.example.warehouseinventory.inventory;
+package org.example.warehouseinventory.reporting.application.service;
 
+
+import org.example.warehouseinventory.catalog.application.service.ProductService;
+import org.example.warehouseinventory.catalog.domain.entity.Product;
 import org.example.warehouseinventory.inventory.application.service.ProductCostService;
 import org.example.warehouseinventory.inventory.application.service.StockMovementService;
 import org.example.warehouseinventory.inventory.domain.dto.response.ProductWarehouseExitSummary;
 import org.example.warehouseinventory.reporting.application.service.impl.AbcReportServiceImpl;
 import org.example.warehouseinventory.reporting.domain.dto.response.AbcReportResponse;
 import org.example.warehouseinventory.reporting.domain.enums.AbcCategory;
-import org.example.warehouseinventory.shared.domain.enums.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
-import org.example.warehouseinventory.catalog.application.service.ProductService;
-import org.example.warehouseinventory.catalog.domain.entity.Product;
-import org.example.warehouseinventory.inventory.api.mapper.InventoryMapper;
-import org.example.warehouseinventory.inventory.application.service.impl.InventoryEntryServiceImpl;
-import org.example.warehouseinventory.inventory.domain.dto.request.InventoryEntryRequest;
-import org.example.warehouseinventory.inventory.domain.dto.response.LotResponse;
-import org.example.warehouseinventory.inventory.domain.entity.Lot;
-import org.example.warehouseinventory.inventory.infrastructure.repository.LotRepository;
-import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
-import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
-import org.example.warehouseinventory.warehouse.application.service.WarehouseService;
-import org.example.warehouseinventory.warehouse.domain.entity.StorageLocation;
-import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
+import org.example.warehouseinventory.shared.domain.Dimensions;
+import org.example.warehouseinventory.shared.domain.Weight;
+import org.example.warehouseinventory.shared.domain.enums.DimensionUnit;
+import org.example.warehouseinventory.shared.domain.enums.ProductCategory;
+import org.example.warehouseinventory.shared.domain.enums.StorageRequirement;
+import org.example.warehouseinventory.shared.domain.enums.WeightUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolationException;
-import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
-import org.example.warehouseinventory.shared.domain.Dimensions;
-import org.example.warehouseinventory.shared.domain.Weight;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.assertj.core.api.Assertions.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class InventoryEntryServiceTest {
+class AbcReportServiceTest {
 
-    @Mock
-    private ProductService productService;
-    @Mock
-    private StockMovementService stockMovementService;
-    @Mock
-    private ProductCostService productCostService;
+    @Mock private ProductService productService;
+    @Mock private StockMovementService stockMovementService;
+    @Mock private ProductCostService productCostService;
 
     private AbcReportServiceImpl abcReportService;
 
     private static final LocalDate FROM = LocalDate.of(2024, 1, 1);
-    private static final LocalDate TO = LocalDate.of(2024, 12, 31);
+    private static final LocalDate TO   = LocalDate.of(2024, 12, 31);
 
     @BeforeEach
     void setUp() {
         abcReportService = new AbcReportServiceImpl(productService, stockMovementService, productCostService);
     }
+
     // --- happy path ---
 
     @Test
@@ -86,15 +70,15 @@ class InventoryEntryServiceTest {
         // Item 3:  30 × $10 = $300  → 15%  acumulado 95%   → B  (exactamente en umbral)
         // Item 4:  10 × $10 = $100  →  5%  acumulado 100%  → C
         UUID warehouseId = UUID.randomUUID();
-        UUID productId1 = UUID.randomUUID();
-        UUID productId2 = UUID.randomUUID();
-        UUID productId3 = UUID.randomUUID();
-        UUID productId4 = UUID.randomUUID();
+        UUID productId1  = UUID.randomUUID();
+        UUID productId2  = UUID.randomUUID();
+        UUID productId3  = UUID.randomUUID();
+        UUID productId4  = UUID.randomUUID();
 
-        Product product1 = mockProduct(productId1, "SKU-1", "Product 1");
-        Product product2 = mockProduct(productId2, "SKU-2", "Product 2");
-        Product product3 = mockProduct(productId3, "SKU-3", "Product 3");
-        Product product4 = mockProduct(productId4, "SKU-4", "Product 4");
+        Product product1 = buildProduct("SKU-1", "Product 1");
+        Product product2 = buildProduct("SKU-2", "Product 2");
+        Product product3 = buildProduct("SKU-3", "Product 3");
+        Product product4 = buildProduct("SKU-4", "Product 4");
 
         when(stockMovementService.getExitSummaryByProductAndWarehouse(FROM, TO)).thenReturn(List.of(
                 new ProductWarehouseExitSummary(productId1, warehouseId, 100),
@@ -128,13 +112,13 @@ class InventoryEntryServiceTest {
     @Test
     void generateAbcReport_itemsSortedByConsumptionValueDescending_regardlessOfInputOrder() {
         UUID warehouseId = UUID.randomUUID();
-        UUID productId1 = UUID.randomUUID(); // mayor valor
-        UUID productId2 = UUID.randomUUID(); // menor valor
+        UUID productId1  = UUID.randomUUID(); // mayor valor
+        UUID productId2  = UUID.randomUUID(); // menor valor
 
-        Product product1 = mockProduct(productId1, "SKU-1", "Product 1");
-        Product product2 = mockProduct(productId2, "SKU-2", "Product 2");
+        Product product1 = buildProduct("SKU-1", "Product 1");
+        Product product2 = buildProduct("SKU-2", "Product 2");
 
-        // llegan en orden invertido
+        // llegan en orden invertido — SKU-2 primero, SKU-1 segundo
         when(stockMovementService.getExitSummaryByProductAndWarehouse(FROM, TO)).thenReturn(List.of(
                 new ProductWarehouseExitSummary(productId2, warehouseId, 10),
                 new ProductWarehouseExitSummary(productId1, warehouseId, 100)
@@ -147,18 +131,19 @@ class InventoryEntryServiceTest {
 
         AbcReportResponse result = abcReportService.generateAbcReport(FROM, TO);
 
-        assertThat(result.items().get(0).productId()).isEqualTo(productId1);
-        assertThat(result.items().get(1).productId()).isEqualTo(productId2);
+        // el de mayor consumo debe quedar primero independientemente del orden de entrada
+        assertThat(result.items().get(0).productSku()).isEqualTo("SKU-1");
+        assertThat(result.items().get(1).productSku()).isEqualTo("SKU-2");
     }
 
     // --- manejo de costo ausente ---
 
     @Test
     void generateAbcReport_usesZeroCost_whenProductCostNotFound() {
-        UUID productId = UUID.randomUUID();
+        UUID productId   = UUID.randomUUID();
         UUID warehouseId = UUID.randomUUID();
 
-        Product product = mockProduct(productId, "SKU-1", "Product 1");
+        Product product = buildProduct("SKU-1", "Product 1");
 
         when(stockMovementService.getExitSummaryByProductAndWarehouse(FROM, TO))
                 .thenReturn(List.of(new ProductWarehouseExitSummary(productId, warehouseId, 50)));
@@ -168,14 +153,14 @@ class InventoryEntryServiceTest {
         AbcReportResponse result = abcReportService.generateAbcReport(FROM, TO);
 
         assertThat(result.items()).hasSize(1);
-        assertThat(result.items().get(0).consumptionValue()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.items().get(0).averageCost()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(result.items().get(0).category()).isEqualTo(AbcCategory.C);
+        assertThat(result.items().getFirst().consumptionValue()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.items().getFirst().averageCost()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.items().getFirst().category()).isEqualTo(AbcCategory.C);
     }
 
     // --- helper ---
 
-    private Product mockProduct(UUID id, String sku, String name) {
+    private Product buildProduct(String sku, String name) {
         return Product.create(
                 sku,
                 name,
@@ -187,5 +172,4 @@ class InventoryEntryServiceTest {
                 StorageRequirement.AMBIENT
         );
     }
-
 }
