@@ -99,7 +99,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("INTERNAL_ERROR", ex.getMessage()));
+                .body(new ErrorResponse("INTERNAL_ERROR", "An unexpected error occurred"));
     }
 
 }

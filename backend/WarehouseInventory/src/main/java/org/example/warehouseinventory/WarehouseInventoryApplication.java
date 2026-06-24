@@ -19,22 +19,4 @@ public class WarehouseInventoryApplication {
         SpringApplication.run(WarehouseInventoryApplication.class, args);
     }
 
-    //temporal code for have a default admin
-    @Bean
-    @Profile("!test")
-    CommandLineRunner initAdmin(UserRepository userRepository,
-                                PasswordEncoder passwordEncoder) {
-        return args -> {
-            if (!userRepository.existsByUsername("admin")) {
-                User admin = User.builder()
-                        .username("admin")
-                        .password(passwordEncoder.encode("password123"))
-                        .role(Role.ADMIN)
-                        .active(true)
-                        .build();
-                userRepository.save(admin);
-                System.out.println("Admin user created successfully");
-            }
-        };
-    }
 }
