@@ -30,7 +30,6 @@ import java.util.Objects;
 public class InventoryEntryServiceImpl implements InventoryEntryService {
 
     private final ProductService productService;
-    private final ProductMapper productMapper;
     private final WarehouseService warehouseService;
     private final StorageLocationService storageLocationService;
     private final LotRepository lotRepository;
