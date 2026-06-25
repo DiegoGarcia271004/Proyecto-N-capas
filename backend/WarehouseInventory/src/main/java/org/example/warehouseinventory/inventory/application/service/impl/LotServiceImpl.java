@@ -1,6 +1,7 @@
 package org.example.warehouseinventory.inventory.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.warehouseinventory.catalog.domain.dto.response.ReorderProjection;
 import org.example.warehouseinventory.inventory.application.service.LotService;
 import org.example.warehouseinventory.inventory.domain.entity.Lot;
 import org.example.warehouseinventory.inventory.infrastructure.repository.LotRepository;
@@ -20,5 +21,12 @@ public class LotServiceImpl implements LotService {
     public List<Lot> findExpiredLotsWithStock() {
 
         return lotRepository.findExpiredLotsWithStock();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReorderProjection> findProductsBelowReorderPoint() {
+
+        return lotRepository.findProductsBelowReorderPoint();
     }
 }

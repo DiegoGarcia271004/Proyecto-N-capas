@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +19,19 @@ public class StockMovementServiceImpl implements StockMovementService {
 
     @Override
     public List<ProductWarehouseExitSummary> getExitSummaryByProductAndWarehouse(LocalDate from, LocalDate to) {
+
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.plusDays(1).atStartOfDay();
+
         return stockMovementRepository.sumExitByProductAndWarehouse(fromDt, toDt)
                 .stream()
                 .map(p -> new ProductWarehouseExitSummary(p.getProductId(), p.getWarehouseId(), p.getTotalExitQuantity()))
                 .toList();
+    }
+
+    @Override
+    public Integer getTotalExit(UUID product, UUID warehouse) {
+
+        return stockMovementRepository.getTotalExitQuantityLast90Days(product, warehouse);
     }
 }

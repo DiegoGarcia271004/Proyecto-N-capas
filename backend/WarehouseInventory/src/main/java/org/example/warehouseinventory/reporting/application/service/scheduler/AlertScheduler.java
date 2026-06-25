@@ -4,12 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.warehouseinventory.catalog.application.service.ProductService;
 import org.example.warehouseinventory.catalog.domain.dto.response.LowStockProjection;
+import org.example.warehouseinventory.catalog.domain.dto.response.ReorderProjection;
 import org.example.warehouseinventory.inventory.application.service.LotService;
 import org.example.warehouseinventory.inventory.domain.entity.Lot;
-import org.example.warehouseinventory.reporting.domain.event.ExpiredLotEvent;
-import org.example.warehouseinventory.reporting.domain.event.LowStockEvent;
-import org.example.warehouseinventory.reporting.domain.event.ResolveExpiredLotEvent;
-import org.example.warehouseinventory.reporting.domain.event.ResolveLowStockEvent;
+import org.example.warehouseinventory.reporting.application.service.ReorderSuggestionService;
+import org.example.warehouseinventory.reporting.domain.event.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,6 +28,7 @@ public class AlertScheduler {
     private final ProductService productService;
     private final LotService lotService;
     private final ApplicationEventPublisher eventPublisher;
+    private final ReorderSuggestionService reorderSuggestionService;
 
     @Scheduled(fixedRate = 10_000)
     @Transactional(readOnly = true) 
@@ -79,6 +79,33 @@ public class AlertScheduler {
             );
 
             eventPublisher.publishEvent(new ResolveExpiredLotEvent(expiredLotsIds));
+        }
+    }
+
+    @Scheduled(fixedRate = 10_000)
+    @Transactional(readOnly = true)
+    public void checkReorderPoints() {
+
+        log.info("Running reorder point check...");
+
+        List<ReorderProjection> productsBelowReorderPoint = lotService.findProductsBelowReorderPoint();
+
+        if (!productsBelowReorderPoint.isEmpty()) {
+
+            productsBelowReorderPoint.forEach(p -> {
+
+                ReorderSuggestionEvent event = new ReorderSuggestionEvent(
+                        p.getProductId(),
+                        p.getWarehouseId(),
+                        p.getSku(),
+                        p.getCurrentStock(),
+                        p.getReorderPoint(),
+                        0,
+                        0.0
+                );
+
+                reorderSuggestionService.processReorderSuggestion(event);
+            });
         }
     }
 }
