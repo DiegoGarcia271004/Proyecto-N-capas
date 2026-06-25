@@ -55,4 +55,13 @@ public class ProductCost extends AuditableEntity {
         this.averageCost = currentTotal.add(newTotal)
                 .divide(BigDecimal.valueOf(this.totalQuantity), 2, RoundingMode.HALF_UP);
     }
+
+    public static ProductCost create(Product product, Warehouse warehouse, BigDecimal averageCost, Integer totalQuantity) {
+        ProductCost productCost = new ProductCost();
+        productCost.product = product;
+        productCost.warehouse = warehouse;
+        productCost.averageCost = averageCost;
+        productCost.totalQuantity = totalQuantity;
+        return productCost;
+    }
 }

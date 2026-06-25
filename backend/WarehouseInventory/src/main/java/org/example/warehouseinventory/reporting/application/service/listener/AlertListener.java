@@ -7,7 +7,7 @@ import org.example.warehouseinventory.reporting.domain.event.ExpiredLotEvent;
 import org.example.warehouseinventory.reporting.domain.event.LowStockEvent;
 import org.example.warehouseinventory.reporting.domain.event.ResolveExpiredLotEvent;
 import org.example.warehouseinventory.reporting.domain.event.ResolveLowStockEvent;
-import org.example.warehouseinventory.reporting.repository.NotificationRepository;
+import org.example.warehouseinventory.reporting.infrastructure.repository.NotificationRepository;
 import org.example.warehouseinventory.shared.domain.enums.NotificationType;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

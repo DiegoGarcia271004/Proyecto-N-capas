@@ -20,7 +20,9 @@ public class ProductMapper {
                     req.minStockLevel(),
                     req.reorderPoint(),
                     req.category(),
-                    req.requirements()
+                    req.requirements(),
+                    req.leadTimeDays(),
+                    req.safetyStock()
                 );
     }
 
@@ -28,7 +30,8 @@ public class ProductMapper {
         product.update(
                 req.sku(), req.name(), req.category(),
                 req.requirements(), req.minStockLevel(),
-                req.reorderPoint(), req.weight(), req.dimensions()
+                req.reorderPoint(), req.weight(), req.dimensions(),
+                req.leadTimeDays(), req.safetyStock()
         );
     }
 

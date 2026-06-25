@@ -5,7 +5,7 @@ import org.example.warehouseinventory.reporting.api.mapper.NotificationMapper;
 import org.example.warehouseinventory.reporting.application.service.NotificationService;
 import org.example.warehouseinventory.reporting.domain.dto.response.NotificationResponse;
 import org.example.warehouseinventory.reporting.domain.entity.Notification;
-import org.example.warehouseinventory.reporting.repository.NotificationRepository;
+import org.example.warehouseinventory.reporting.infrastructure.repository.NotificationRepository;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

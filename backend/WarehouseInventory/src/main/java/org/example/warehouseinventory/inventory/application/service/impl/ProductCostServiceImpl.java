@@ -22,7 +22,6 @@ public class ProductCostServiceImpl implements ProductCostService {
 
     private final ProductCostRepository productCostRepository;
     private final ProductService productService;
-    private final ProductMapper productMapper;
     private final WarehouseService warehouseService;
 
     @Override
@@ -42,14 +41,19 @@ public class ProductCostServiceImpl implements ProductCostService {
 
             Warehouse _warehouse = warehouseService.getWarehouseById(warehouse);
 
-            ProductCost productCost = ProductCost.builder()
-                    .product(_product)
-                    .warehouse(_warehouse)
-                    .averageCost(newCost)
-                    .totalQuantity(newQuantity)
-                    .build();
+            ProductCost productCost = ProductCost.create(
+                    _product,
+                    _warehouse,
+                    newCost,
+                    newQuantity
+            );
 
             productCostRepository.save(productCost);
         }
+    }
+
+    @Override
+    public Optional<BigDecimal> getAverageCost(UUID productId, UUID warehouseId) {
+        return productCostRepository.findByProductIdAndWarehouseId(productId, warehouseId).map(ProductCost::getAverageCost);
     }
 }
