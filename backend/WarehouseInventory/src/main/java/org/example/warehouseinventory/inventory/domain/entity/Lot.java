@@ -87,4 +87,9 @@ public class Lot extends AuditableEntity {
         return lot;
     }
 
+    public void applyDiscrepancy(Integer discrepancy) {
+        this.availableQuantity += discrepancy;
+        if (this.availableQuantity < 0) this.availableQuantity = 0;
+    }
+
 }

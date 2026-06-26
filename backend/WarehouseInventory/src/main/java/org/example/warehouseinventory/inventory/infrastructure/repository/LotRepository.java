@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface LotRepository extends JpaRepository<Lot, UUID> {
 
     @Query(value = "SELECT * FROM lot " +
-            "WHERE product = :productId " +
+            "WHERE product_id = :productId " +
             "AND warehouse = :warehouseId " +
             "AND available_quantity > 0 " +
             "AND (expiration_date IS NULL OR expiration_date >= CURRENT_DATE) " +
