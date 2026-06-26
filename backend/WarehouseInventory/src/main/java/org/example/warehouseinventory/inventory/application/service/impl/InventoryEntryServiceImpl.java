@@ -1,5 +1,6 @@
 package org.example.warehouseinventory.inventory.application.service.impl;
 
+import org.example.warehouseinventory.shared.domain.enums.StorageRequirement;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.warehouseinventory.catalog.api.mapper.ProductMapper;
@@ -45,8 +46,9 @@ public class InventoryEntryServiceImpl implements InventoryEntryService {
 
         Warehouse _warehouse = warehouseService.getWarehouseById(request.warehouse());
 
+        StorageRequirement requirement = _product.getStorageRequirement();
         StorageLocation location = storageLocationService.findAvailableStorageLocation(
-                request.warehouse(), request.quantity()
+                request.warehouse(), request.quantity(), requirement
         );
 
         Lot lot = Lot.create(
