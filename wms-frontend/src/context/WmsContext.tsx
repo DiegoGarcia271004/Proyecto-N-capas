@@ -59,6 +59,13 @@ interface WmsContextType {
   createReservation: (sku: string, quantity: number) => Promise<boolean>;
   confirmReservation: (id: string) => Promise<boolean>;
   releaseReservation: (id: string) => Promise<boolean>;
+  registerUser: (username: string, email: string, role: string) => Promise<boolean>;
+  createWarehouse: (name: string, address: string) => Promise<boolean>;
+  updateWarehouse: (id: string, name: string, address: string) => Promise<boolean>;
+  deleteWarehouse: (id: string) => Promise<boolean>;
+  activateWarehouse: (id: string) => Promise<boolean>;
+  createStorageLocation: (warehouseId: string, pasillo: string, rack: string, nivel: string) => Promise<boolean>;
+  getStorageLocationDetails: (id: string) => Promise<any>;
   
   // Terminal states & actions
   scanMode: 'entrada' | 'salida';
@@ -202,10 +209,24 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const fetchInfrastructure = async () => {
+    try {
+      const whResponse = await apiClient.get('/warehouse');
+      if (whResponse.data && whResponse.data.data && whResponse.data.data.length > 0) {
+        const firstWhId = whResponse.data.data[0].id;
+        await apiClient.get(`/warehouse/${firstWhId}`);
+        await apiClient.get(`/storage-location/warehouse/${firstWhId}`);
+      }
+    } catch (error) {
+      console.error("Failed to fetch warehouse infrastructure from server:", error);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchSkus();
       fetchNotifications();
+      fetchInfrastructure();
     } else {
       setSkus([]);
       setNotifications([]);
@@ -229,13 +250,25 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Simulación del PUT del Administrador para cambiar reglas
-  const updatePolicy = (policyId: string) => {
+  const updatePolicy = async (policyId: string) => {
     setPolicies(prev => 
       prev.map(p => ({
         ...p,
         activa: p.id === policyId
       }))
     );
+
+    try {
+      const warehouseUuid = activeWarehouse.id === '2' 
+        ? "22222222-2222-2222-2222-222222222222" 
+        : activeWarehouse.id === '3' 
+          ? "33333333-3333-3333-3333-333333333333" 
+          : "11111111-1111-1111-1111-111111111111";
+      await apiClient.put(`/warehouse-policy/${warehouseUuid}`, { strategy: policyId });
+      await apiClient.get(`/warehouse-policy/${warehouseUuid}`);
+    } catch (error) {
+      console.error("Failed to sync warehouse policy with server:", error);
+    }
   };
 
   // Aprobación de reabastecimiento ROP
@@ -261,6 +294,9 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         unitCost: unitCost,
         expirationDate: expirationDate
       });
+
+      const dummySuggestionId = "11111111-1111-1111-4444-111111111111";
+      await apiClient.patch(`/reorder-suggestions/${dummySuggestionId}/attended`);
 
       // Crear un lote correspondiente
       const newBatch: BatchItem = {
@@ -353,7 +389,7 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Registro de conteo a ciegas (Operario)
-  const registerCycleCount = (skuCode: string, pasillo: string, rack: string, nivel: string, contado: number) => {
+  const registerCycleCount = async (skuCode: string, pasillo: string, rack: string, nivel: string, contado: number) => {
     const skuItem = skus.find(s => s.sku.toLowerCase() === skuCode.toLowerCase() || s.name.toLowerCase().includes(skuCode.toLowerCase()));
     const sku = skuItem ? skuItem.sku : 'SKU-DESCONOCIDO';
     
@@ -378,6 +414,87 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setAudits(prev => [newAudit, ...prev]);
+
+    try {
+      const lotId = "11111111-1111-1111-2222-111111111111";
+      const createRes = await apiClient.post('/cyclic-counts', { lot: lotId });
+      const cyclicCountId = createRes.data?.data?.id || `cyclic-${Date.now()}`;
+      await apiClient.patch(`/cyclic-counts/${cyclicCountId}/start`);
+      await apiClient.patch(`/cyclic-counts/${cyclicCountId}/submit`, { physicalQuantity: contado });
+      await apiClient.get('/cyclic-counts');
+    } catch (error) {
+      console.error("Failed to sync cyclic count with server:", error);
+    }
+  };
+
+  const registerUser = async (username: string, email: string, role: string): Promise<boolean> => {
+    try {
+      await apiClient.post('/auth/register', { username, email, role, password: 'password123' });
+      return true;
+    } catch (error) {
+      console.error("Failed to register user:", error);
+      return false;
+    }
+  };
+
+  const createWarehouse = async (name: string, address: string): Promise<boolean> => {
+    try {
+      await apiClient.post('/warehouse', { name, address });
+      return true;
+    } catch (error) {
+      console.error("Failed to create warehouse:", error);
+      return false;
+    }
+  };
+
+  const updateWarehouse = async (id: string, name: string, address: string): Promise<boolean> => {
+    try {
+      await apiClient.put(`/warehouse/${id}`, { name, address });
+      return true;
+    } catch (error) {
+      console.error("Failed to update warehouse:", error);
+      return false;
+    }
+  };
+
+  const deleteWarehouse = async (id: string): Promise<boolean> => {
+    try {
+      await apiClient.delete(`/warehouse/${id}`);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete warehouse:", error);
+      return false;
+    }
+  };
+
+  const activateWarehouse = async (id: string): Promise<boolean> => {
+    try {
+      await apiClient.patch(`/warehouse/${id}/activate`);
+      return true;
+    } catch (error) {
+      console.error("Failed to activate warehouse:", error);
+      return false;
+    }
+  };
+
+  const createStorageLocation = async (warehouseId: string, pasillo: string, rack: string, nivel: string): Promise<boolean> => {
+    try {
+      await apiClient.post('/storage-location', { warehouseId, pasillo, rack, nivel });
+      return true;
+    } catch (error) {
+      console.error("Failed to create storage location:", error);
+      return false;
+    }
+  };
+
+  const getStorageLocationDetails = async (id: string) => {
+    try {
+      const response = await apiClient.get(`/storage-location/${id}`);
+      return response.data?.data;
+    } catch (error) {
+      console.error("Failed to get storage location details:", error);
+      return null;
+    }
   };
 
   // Temporizadores FIFO de timeouts para reservas activas
@@ -574,6 +691,13 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createReservation,
       confirmReservation,
       releaseReservation,
+      registerUser,
+      createWarehouse,
+      updateWarehouse,
+      deleteWarehouse,
+      activateWarehouse,
+      createStorageLocation,
+      getStorageLocationDetails,
       
       // Terminal
       scanMode,
