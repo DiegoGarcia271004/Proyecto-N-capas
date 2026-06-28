@@ -20,24 +20,24 @@ export const Register: React.FC = () => {
     setError('');
     setSuccess('');
 
-    if (!username.trim() || !password.trim() || !email.trim()) {
+    if (!username.trim() || !password.trim()) {
       setError('Por favor, completa todos los campos');
       return;
     }
 
     // Mapear rol a lo que el backend de Spring Security espera
-    let backendRole = 'ROLE_OPERATOR';
-    if (role === 'admin') backendRole = 'ROLE_ADMIN';
-    else if (role === 'manager') backendRole = 'ROLE_WAREHOUSE_MANAGER';
+    let backendRole = 'OPERATOR';
+    if (role === 'admin') backendRole = 'ADMIN';
+    else if (role === 'manager') backendRole = 'WAREHOUSE_MANAGER';
 
-    const registered = await registerUser(username.trim(), email.trim(), backendRole);
+    const registered = await registerUser(username.trim(), backendRole, password);
     if (registered) {
       setSuccess('¡Usuario registrado con éxito! Redirigiendo al inicio de sesión...');
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } else {
-      setError('Error al registrar usuario en el servidor');
+      setError('Error al registrar usuario en el servidor. Nota: Solo los usuarios con sesión de ADMINISTRADOR activa pueden crear cuentas. Además, la contraseña debe ser fuerte (ej: Password123!).');
     }
   };
 

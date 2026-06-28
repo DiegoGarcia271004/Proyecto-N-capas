@@ -59,7 +59,7 @@ interface WmsContextType {
   createReservation: (sku: string, quantity: number) => Promise<boolean>;
   confirmReservation: (id: string) => Promise<boolean>;
   releaseReservation: (id: string) => Promise<boolean>;
-  registerUser: (username: string, email: string, role: string) => Promise<boolean>;
+  registerUser: (username: string, role: string, password: string) => Promise<boolean>;
   createWarehouse: (name: string, address: string) => Promise<boolean>;
   updateWarehouse: (id: string, name: string, address: string) => Promise<boolean>;
   deleteWarehouse: (id: string) => Promise<boolean>;
@@ -423,9 +423,9 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const registerUser = async (username: string, email: string, role: string): Promise<boolean> => {
+  const registerUser = async (username: string, role: string, password: string): Promise<boolean> => {
     try {
-      await apiClient.post('/auth/register', { username, email, role, password: 'password123' });
+      await apiClient.post('/auth/register', { username, role, password });
       return true;
     } catch (error) {
       console.error("Failed to register user:", error);
