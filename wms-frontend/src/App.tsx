@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WmsProvider, useWms } from './context/WmsContext';
 import { Login } from './features/auth/Login';
+import { Register } from './features/auth/Register';
 import { MainLayout } from './shared/layouts/MainLayout';
 import { ProtectedRoute } from './core/routes/ProtectedRoute';
 
@@ -43,6 +44,7 @@ const AppContent: React.FC = () => {
       <Routes>
         {/* Ruta pública de Login */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Rutas Privadas / Protegidas */}
         <Route path="/" element={<MainLayout />}>
