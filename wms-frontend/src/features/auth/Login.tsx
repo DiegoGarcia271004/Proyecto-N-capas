@@ -1,146 +1,292 @@
 import React, { useState } from 'react';
 import { useWms } from '../../context/WmsContext';
 import { useNavigate } from 'react-router-dom';
-import { Shield, User, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Shield, User, Lock, ArrowRight, Eye, EyeOff, Mail, CheckCircle } from 'lucide-react';
 
 export const Login: React.FC = () => {
-
-  const { login } = useWms();
+  const { login, registerUser } = useWms();
   const navigate = useNavigate();
 
+  const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<'admin' | 'manager' | 'operator'>('manager');
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
 
     if (!username.trim() || !password.trim()) {
       setError('Por favor, ingresa tu usuario y contraseña');
       return;
     }
 
-    const userRole = await login(username, password);
+    if (isRegister) {
+      if (!email.trim()) {
+        setError('Por favor, ingresa tu correo electrónico');
+        return;
+      }
+      let backendRole = 'ROLE_OPERATOR';
+      if (role === 'admin') backendRole = 'ROLE_ADMIN';
+      else if (role === 'manager') backendRole = 'ROLE_WAREHOUSE_MANAGER';
 
-    if (userRole) {
-      if (userRole === 'ADMIN') {
-        navigate('/configuracion-espacial');
-      } else if (userRole === 'WAREHOUSE_MANAGER') {
-        navigate('/dashboard-analitico');
-      } else if (userRole === 'OPERATOR') {
-        navigate('/terminal-escaner');
+      const registered = await registerUser(username.trim(), email.trim(), backendRole);
+      if (registered) {
+        setSuccess('¡Usuario registrado con éxito! Ahora puedes iniciar sesión.');
+        setIsRegister(false);
+        setPassword('');
       } else {
-        // Fallback por si el backend devuelve un rol desconocido
-        navigate('/');
+        setError('Error al registrar usuario en el servidor');
       }
     } else {
-      setError(`Usuario o contraseña incorrectos`);
+      const userRole = await login(username, password);
+      if (userRole) {
+        if (userRole === 'ADMIN') {
+          navigate('/configuracion-espacial');
+        } else if (userRole === 'WAREHOUSE_MANAGER') {
+          navigate('/dashboard-analitico');
+        } else if (userRole === 'OPERATOR') {
+          navigate('/terminal-escaner');
+        } else {
+          navigate('/');
+        }
+      } else {
+        setError('Usuario o contraseña incorrectos');
+      }
     }
   };
 
+  // Accesos rápidos para calificar/probar el proyecto
+  const selectQuickRole = (selectedRole: 'admin' | 'manager' | 'operator', name: string) => {
+    setIsRegister(false);
+    setRole(selectedRole);
+    setUsername(name);
+    setPassword('password123');
+  };
+
   return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        width: '100vw',
-        background: 'radial-gradient(circle at top left, #0d1527, #06090f)',
-        padding: '20px'
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      width: '100vw',
+      background: 'radial-gradient(circle at top left, #0d1527, #06090f)',
+      padding: '20px'
+    }}>
+      <div className="wms-card" style={{
+        width: '100%',
+        maxWidth: '420px',
+        padding: '36px',
+        borderRadius: '20px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+        border: '1px solid rgba(255, 255, 255, 0.08)'
       }}>
-        <div className="wms-card" style={{
-          width: '100%',
-          maxWidth: '420px',
-          padding: '36px',
-          borderRadius: '20px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-          border: '1px solid rgba(255, 255, 255, 0.08)'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{
-              display: 'inline-flex',
-              padding: '12px',
-              borderRadius: '16px',
-              background: 'var(--gradient-primary)',
-              color: 'var(--text-inverse)',
-              marginBottom: '16px',
-              boxShadow: '0 8px 16px rgba(6, 182, 212, 0.3)'
-            }}>
-              <Shield size={32} />
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{
+            display: 'inline-flex',
+            padding: '12px',
+            borderRadius: '16px',
+            background: 'var(--gradient-primary)',
+            color: 'var(--text-inverse)',
+            marginBottom: '16px',
+            boxShadow: '0 8px 16px rgba(6, 182, 212, 0.3)'
+          }}>
+            <Shield size={32} />
+          </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
+            {isRegister ? 'REGISTRO DE USUARIO' : 'SGA INTELIGENTE'}
+          </h1>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+            {isRegister ? 'Crea una nueva cuenta en el sistema' : 'Ingresa al portal de control logístico'}
+          </p>
+        </div>
+
+        {error && (
+          <div style={{
+            padding: '10px 12px',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            borderRadius: '8px',
+            color: 'var(--color-danger)',
+            fontSize: '0.8rem',
+            marginBottom: '16px',
+            textAlign: 'center'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div style={{
+            padding: '10px 12px',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            borderRadius: '8px',
+            color: 'var(--color-success)',
+            fontSize: '0.8rem',
+            marginBottom: '16px',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}>
+            <CheckCircle size={16} />
+            <span>{success}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Input Usuario */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 500 }}>
+              Usuario
+            </label>
+            <div className="wms-search-bar" style={{ width: '100%' }}>
+              <User size={16} style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                className="wms-search-input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Ingresa tu usuario..."
+              />
             </div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>SGA INTELIGENTE</h1>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Ingresa al portal de control logístico
-            </p>
           </div>
 
-          {error && (
-              <div style={{
-                padding: '10px 12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                borderRadius: '8px',
-                color: 'var(--color-danger)',
-                fontSize: '0.8rem',
-                marginBottom: '16px',
-                textAlign: 'center'
-              }}>
-                {error}
-              </div>
-          )}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Input Usuario */}
+          {/* Input Correo (Solo en Registro) */}
+          {isRegister && (
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 500 }}>
-                Usuario
+                Correo Electrónico
               </label>
               <div className="wms-search-bar" style={{ width: '100%' }}>
-                <User size={16} style={{ color: 'var(--text-muted)' }} />
+                <Mail size={16} style={{ color: 'var(--text-muted)' }} />
                 <input
-                    type="text"
-                    className="wms-search-input"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Ingresa tu usuario..."
+                  type="email"
+                  className="wms-search-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Ingresa tu correo..."
                 />
               </div>
             </div>
+          )}
 
-            {/* Input Contraseña */}
+          {/* Input Contraseña */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 500 }}>
+              Contraseña
+            </label>
+            <div className="wms-search-bar" style={{ width: '100%', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <Lock size={16} style={{ color: 'var(--text-muted)' }} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="wms-search-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Ingresa tu contraseña..."
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Selector de Rol (Solo en Registro) */}
+          {isRegister && (
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 500 }}>
-                Contraseña
+                Rol Asignado
               </label>
-              <div className="wms-search-bar" style={{ width: '100%', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                  <Lock size={16} style={{ color: 'var(--text-muted)' }} />
-                  <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="wms-search-input"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Ingresa tu contraseña..."
-                  />
-                </div>
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              <select
+                className="wms-warehouse-selector"
+                style={{ width: '100%', padding: '10px' }}
+                value={role}
+                onChange={(e) => setRole(e.target.value as any)}
+              >
+                <option value="admin">🔒 Administrador</option>
+                <option value="manager">📊 Jefe de Almacén</option>
+                <option value="operator">📱 Operario de Terminal</option>
+              </select>
             </div>
+          )}
 
-            {/* Botón de envío */}
-            <button type="submit" className="wms-btn wms-btn-primary" style={{ padding: '12px', fontSize: '0.95rem', marginTop: '8px' }}>
-              <span>Iniciar Sesión</span>
-              <ArrowRight size={18} />
-            </button>
-          </form>
-        </div>
+          {/* Botón de envío */}
+          <button type="submit" className="wms-btn wms-btn-primary" style={{ padding: '12px', fontSize: '0.95rem', marginTop: '8px' }}>
+            <span>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</span>
+            <ArrowRight size={18} />
+          </button>
+        </form>
+
+        {/* Enlace para alternar entre Login y Registro */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsRegister(!isRegister);
+            setError('');
+            setSuccess('');
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--color-primary)',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            textAlign: 'center',
+            width: '100%',
+            marginTop: '16px',
+            textDecoration: 'underline'
+          }}
+        >
+          {isRegister ? '¿Ya tienes cuenta? Inicia Sesión' : '¿No tienes cuenta? Regístrate'}
+        </button>
+
+        {/* Accesos rápidos de prueba (solo en Login) */}
+        {!isRegister && (
+          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '10px', fontWeight: 600 }}>
+              ACCESOS RÁPIDOS PARA PRUEBAS
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              <button
+                onClick={() => selectQuickRole('admin', 'admin_wms')}
+                className="wms-btn wms-btn-outline wms-btn-sm"
+                style={{ fontSize: '0.7rem', padding: '6px 4px' }}
+              >
+                Admin
+              </button>
+              <button
+                onClick={() => selectQuickRole('manager', 'jefe_madrid')}
+                className="wms-btn wms-btn-outline wms-btn-sm"
+                style={{ fontSize: '0.7rem', padding: '6px 4px' }}
+              >
+                Jefe (WMS)
+              </button>
+              <button
+                onClick={() => selectQuickRole('operator', 'operario_juan')}
+                className="wms-btn wms-btn-outline wms-btn-sm"
+                style={{ fontSize: '0.7rem', padding: '6px 4px' }}
+              >
+                Operario
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+    </div>
   );
 };
