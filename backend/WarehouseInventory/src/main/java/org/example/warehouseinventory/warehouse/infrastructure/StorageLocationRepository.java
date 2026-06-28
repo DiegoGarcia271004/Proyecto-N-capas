@@ -24,4 +24,7 @@ public interface StorageLocationRepository extends JpaRepository<StorageLocation
             "WHERE sl.warehouse.id = :warehouse " +
             "AND sl.available = TRUE")
     Integer getCapacityAvailableByWarehouse(@Param("warehouse") UUID warehouse);
+
+    List<StorageLocation> findByWarehouseId(UUID warehouseId);
+    boolean existsByWarehouseIdAndCode(UUID warehouseId, String code);
 }

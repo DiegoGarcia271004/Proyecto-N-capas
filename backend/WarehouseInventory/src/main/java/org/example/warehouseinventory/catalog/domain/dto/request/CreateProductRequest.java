@@ -36,5 +36,13 @@ public record CreateProductRequest(
     Dimensions dimensions,
 
     @NotNull
-    StorageRequirement requirements
+    StorageRequirement requirements,
+
+    @NotNull(message = "Lead time days is required.")
+    @Positive(message = "Lead time days must be greater than zero.")
+    Integer leadTimeDays,
+
+    @NotNull(message = "Safety stock is required.")
+    @Positive(message = "Safety stock must be greater than zero.")
+    Integer safetyStock
 ){}

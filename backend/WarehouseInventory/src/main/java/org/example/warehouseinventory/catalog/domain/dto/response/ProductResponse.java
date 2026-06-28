@@ -23,6 +23,8 @@ public record ProductResponse(
         Integer reorderPoint,
         ProductCategory category,
         StorageRequirement storageRequirement,
-        Boolean active
+        Boolean active,
+        Integer leadTimeDays,
+        Integer safetyStock
 ) {
 }

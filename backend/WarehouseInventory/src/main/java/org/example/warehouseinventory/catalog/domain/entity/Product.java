@@ -47,6 +47,12 @@ public class Product extends AuditableEntity {
     @Enumerated(EnumType.STRING)
     private StorageRequirement storageRequirement;
 
+    @Column(nullable = false)
+    private Integer leadTimeDays;
+
+    @Column(nullable = false)
+    private Integer safetyStock;
+
     private Boolean active;
 
     public void deactivate() {
@@ -57,8 +63,8 @@ public class Product extends AuditableEntity {
         active = true;
     }
 
-    public static Product create(String sku, String name, Dimensions dimensions, Weight weight, Integer minStockLevel,
-                              Integer reorderPoint, ProductCategory productCategory, StorageRequirement storageRequirement) {
+    public static Product create(String sku, String name, Dimensions dimensions, Weight weight, Integer minStockLevel, Integer reorderPoint,
+                                 ProductCategory productCategory, StorageRequirement storageRequirement, Integer leadTimeDays, Integer safetyStock) {
         Product product = new Product();
         product.sku = sku;
         product.name = name;
@@ -69,12 +75,15 @@ public class Product extends AuditableEntity {
         product.weight = weight;
         product.active = true;
         product.dimensions = dimensions;
+        product.leadTimeDays = leadTimeDays;
+        product.safetyStock = safetyStock;
         return product;
     }
 
     public void update(String sku, String name, ProductCategory category,
                        StorageRequirement storageRequirement, Integer minStockLevel,
-                       Integer reorderPoint, Weight weight, Dimensions dimensions) {
+                       Integer reorderPoint, Weight weight, Dimensions dimensions,
+                       Integer leadTimeDays, Integer safetyStock) {
         this.sku = sku;
         this.name = name;
         this.productCategory = category;
@@ -83,5 +92,7 @@ public class Product extends AuditableEntity {
         this.reorderPoint = reorderPoint;
         this.weight = weight;
         this.dimensions = dimensions;
+        this.leadTimeDays = leadTimeDays;
+        this.safetyStock = safetyStock;
     }
 }

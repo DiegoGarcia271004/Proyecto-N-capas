@@ -1,4 +1,4 @@
-package org.example.warehouseinventory.reporting.repository;
+package org.example.warehouseinventory.reporting.infrastructure.repository;
 
 import org.example.warehouseinventory.reporting.domain.entity.Notification;
 import org.example.warehouseinventory.shared.domain.enums.NotificationType;
