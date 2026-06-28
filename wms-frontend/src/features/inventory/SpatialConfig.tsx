@@ -8,7 +8,6 @@ export const SpatialConfig: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSavePolicy = (id: string) => {
-    // Simula una petición PUT
     updatePolicy(id);
   };
 
