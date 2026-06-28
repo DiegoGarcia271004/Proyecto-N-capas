@@ -30,7 +30,7 @@ interface UserSession {
 interface WmsContextType {
   // Session State
   user: UserSession | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
 
   // General WMS State
@@ -59,7 +59,7 @@ interface WmsContextType {
   createReservation: (sku: string, quantity: number) => Promise<boolean>;
   confirmReservation: (id: string) => Promise<boolean>;
   releaseReservation: (id: string) => Promise<boolean>;
-  registerUser: (username: string, email: string, role: string) => Promise<boolean>;
+  registerUser: (username: string, role: string, password: string) => Promise<boolean>;
   createWarehouse: (name: string, address: string) => Promise<boolean>;
   updateWarehouse: (id: string, name: string, address: string) => Promise<boolean>;
   deleteWarehouse: (id: string) => Promise<boolean>;
@@ -110,24 +110,24 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [scanHistory, setScanHistory] = useState<(ScanSimulation & { fecha: Date; tipo: string })[]>([]);
   const [isScannerFocused, setIsScannerFocused] = useState<boolean>(true);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-
-    if (!username.trim()) return false;
+  const login = async (username: string, password: string): Promise<any> => {
+    if (!username.trim()) return null;
 
     try {
       const response = await apiClient.post('/auth/login', { username, password });
+      const rawRole = response.data.role || response.data.data?.role || '';
+      
+      let mappedRole: 'admin' | 'manager' | 'operator' = 'operator';
+      if (rawRole === 'ADMIN' || rawRole === 'admin') mappedRole = 'admin';
+      else if (rawRole === 'WAREHOUSE_MANAGER' || rawRole === 'manager') mappedRole = 'manager';
 
-      const role = response.data.role;
-
-      const session: UserSession = { username, role, token: 'session_cookie' };
-
+      const session: UserSession = { username, role: mappedRole, token: 'session_cookie' };
       setUser(session);
-
       localStorage.setItem('wms_session', JSON.stringify(session));
-      return true;
+      return rawRole;
     } catch (error) {
       console.error("Login failed:", error);
-      return false;
+      return null;
     }
   };
 
@@ -456,6 +456,16 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await apiClient.get('/cyclic-counts');
     } catch (error) {
       console.error("Failed to sync cyclic count with server:", error);
+    }
+  };
+
+  const registerUser = async (username: string, role: string, password: string): Promise<boolean> => {
+    try {
+      await apiClient.post('/auth/register', { username, role, password });
+      return true;
+    } catch (error) {
+      console.error("Failed to register user:", error);
+      return false;
     }
   };
 
