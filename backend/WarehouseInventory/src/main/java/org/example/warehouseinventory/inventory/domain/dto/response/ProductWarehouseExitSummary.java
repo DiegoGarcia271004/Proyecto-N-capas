@@ -6,5 +6,4 @@ public record ProductWarehouseExitSummary(
         UUID productId,
         UUID warehouseId,
         Integer totalExitQuantity
-) {
-}
+) {}
