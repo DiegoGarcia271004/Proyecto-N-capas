@@ -1,12 +1,19 @@
 package org.example.warehouseinventory.warehouse.application.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.warehouseinventory.shared.api.exception.BusinessRuleViolationException;
+import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.example.warehouseinventory.shared.domain.enums.AssignmentStrategy;
 import org.example.warehouseinventory.shared.domain.enums.StorageRequirement;
+import org.example.warehouseinventory.warehouse.api.mapper.StorageLocationMapper;
 import org.example.warehouseinventory.warehouse.application.service.StorageLocationService;
 import org.example.warehouseinventory.warehouse.application.service.WarehousePolicyService;
+import org.example.warehouseinventory.warehouse.application.service.WarehouseService;
 import org.example.warehouseinventory.warehouse.application.strategy.LocationAssignmentStrategy;
+import org.example.warehouseinventory.warehouse.domain.dto.request.CreateStorageLocationRequest;
+import org.example.warehouseinventory.warehouse.domain.dto.response.StorageLocationResponse;
 import org.example.warehouseinventory.warehouse.domain.entity.StorageLocation;
+import org.example.warehouseinventory.warehouse.domain.entity.Warehouse;
 import org.example.warehouseinventory.warehouse.domain.exception.NoAvailableStorageLocationException;
 import org.example.warehouseinventory.warehouse.infrastructure.StorageLocationRepository;
 import org.springframework.stereotype.Service;
@@ -22,7 +29,8 @@ public class StorageLocationServiceImpl implements StorageLocationService {
     private final StorageLocationRepository storageLocationRepository;
     private final WarehousePolicyService warehousePolicyService;
     private final List<LocationAssignmentStrategy> strategies;
-
+    private final StorageLocationMapper storageLocationMapper;
+    private final WarehouseService warehouseService;
 
     @Override
     public StorageLocation findAvailableStorageLocation(UUID warehouse, Integer quantity, StorageRequirement requirement) {
@@ -48,23 +56,6 @@ public class StorageLocationServiceImpl implements StorageLocationService {
         return strategy.assign(available, requirement);
     }
 
-//    y ademas dime, en el caso de storage location service debo eliminar el metodo que estaba antes de findAvailableStorageLocation a este
-//    nuevo que creaste de findAvailableLocation, literalmente es una refactorizacion de ese metodo
-//
-//    @Override
-//    @Transactional(readOnly = true)
-//    public StorageLocation findAvailableStorageLocation(UUID warehouse, Integer quantity) {
-//
-//        return storageLocationRepository
-//                .findAvailableByCapacity(warehouse, quantity)
-//                .stream()
-//                .findFirst()
-//                .orElseThrow(() -> new NoAvailableStorageLocationException(
-//                        warehouse, quantity,
-//                        storageLocationRepository.getCapacityAvailableByWarehouse(warehouse)
-//                ));
-//    }
-
     @Override
     @Transactional
     public void updateOccupancy(StorageLocation location, int units) {
@@ -77,5 +68,43 @@ public class StorageLocationServiceImpl implements StorageLocationService {
     public void releaseOccupancy(StorageLocation location, int units) {
         location.removeOccupancy(units);
         storageLocationRepository.save(location);
+    }
+
+    @Override
+    @Transactional
+    public StorageLocationResponse createLocation(CreateStorageLocationRequest request) {
+
+        Warehouse warehouse = warehouseService.getWarehouseById(request.warehouse());
+
+        if (storageLocationRepository.existsByWarehouseIdAndCode(
+                request.warehouse(), request.code())
+        ) {
+            throw new BusinessRuleViolationException(
+                    "Location with code '" + request.code() +
+                            "' already exists in this warehouse");
+        }
+
+        StorageLocation location = StorageLocation.create(
+                warehouse, request.code(), request.zone(),
+                request.maxCapacity(), 0);
+
+        return storageLocationMapper.toDto(storageLocationRepository.save(location));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StorageLocationResponse> getByWarehouse(UUID warehouseId) {
+        return storageLocationMapper.toDtoList(
+                storageLocationRepository.findByWarehouseId(warehouseId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StorageLocationResponse getLocationById(UUID id) {
+
+        return storageLocationMapper.toDto(
+                storageLocationRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Storage location not found with id: " + id)));
     }
 }

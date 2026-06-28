@@ -7,7 +7,6 @@ import org.example.warehouseinventory.inventory.domain.entity.Lot;
 import org.example.warehouseinventory.inventory.domain.entity.StockMovement;
 import org.example.warehouseinventory.inventory.infrastructure.repository.StockMovementRepository;
 import org.example.warehouseinventory.shared.domain.enums.MovementType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,8 +43,6 @@ public class StockMovementServiceImpl implements StockMovementService {
     @Override
     @Transactional
     public void recordAdjustment(Lot lot, Integer discrepancy) {
-        String performedBy = Objects.requireNonNull(
-                SecurityContextHolder.getContext().getAuthentication()).getName();
 
         StockMovement movement = StockMovement.create(
                 lot,

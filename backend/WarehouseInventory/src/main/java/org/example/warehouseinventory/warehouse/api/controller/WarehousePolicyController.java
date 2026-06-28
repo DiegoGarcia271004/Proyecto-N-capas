@@ -19,7 +19,7 @@ public class WarehousePolicyController extends BaseController {
 
     private final WarehousePolicyService warehousePolicyService;
 
-    @GetMapping("/{warehouseId}")
+    @GetMapping("/{warehouse}")
     @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public ResponseEntity<GeneralResponse> getPolicy(
             @PathVariable UUID warehouse
@@ -32,17 +32,17 @@ public class WarehousePolicyController extends BaseController {
         );
     }
 
-    @PutMapping("/{warehouseId}")
+    @PutMapping("/{warehouse}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GeneralResponse> setStrategy(
-            @PathVariable UUID warehouseId,
+            @PathVariable UUID warehouse,
             @RequestParam AssignmentStrategy strategy
     ) {
 
         return buildResponse(
                 "Strategy updated successfully",
                 HttpStatus.OK,
-                warehousePolicyService.setStrategy(warehouseId, strategy)
+                warehousePolicyService.setStrategy(warehouse, strategy)
         );
     }
 }

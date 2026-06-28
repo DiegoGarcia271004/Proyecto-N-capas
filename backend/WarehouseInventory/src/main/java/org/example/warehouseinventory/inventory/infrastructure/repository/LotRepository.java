@@ -20,8 +20,10 @@ public interface LotRepository extends JpaRepository<Lot, UUID> {
             "AND (expiration_date IS NULL OR expiration_date >= CURRENT_DATE) " +
             "ORDER BY expiration_date ASC NULLS LAST, received_at ASC",
             nativeQuery = true)
-    List<Lot> findAvailableLotsFifo(@Param("productId") UUID productId,
-                                    @Param("warehouseId") UUID warehouseId);
+    List<Lot> findAvailableLotsFifo(
+            @Param("productId") UUID productId,
+            @Param("warehouseId") UUID warehouseId
+    );
 
     @Query(value = """
         SELECT * FROM lot

@@ -10,6 +10,7 @@ import org.example.warehouseinventory.reporting.domain.event.ReorderSuggestionEv
 import org.example.warehouseinventory.reporting.infrastructure.repository.ReorderSuggestionRepository;
 import org.example.warehouseinventory.shared.api.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -52,7 +53,7 @@ public class ReorderSuggestionServiceImpl implements ReorderSuggestionService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processReorderSuggestion(ReorderSuggestionEvent event) {
 
         Integer totalExit = stockMovementService.getTotalExit(event.product(), event.warehouse());
