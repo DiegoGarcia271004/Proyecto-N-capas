@@ -6,7 +6,6 @@ export const SpatialConfig: React.FC = () => {
   const { policies, updatePolicy } = useWms();
 
   const handleSavePolicy = (id: string) => {
-    // Simula una petición PUT
     updatePolicy(id);
   };
 

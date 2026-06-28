@@ -31,7 +31,6 @@ export const Login: React.FC = () => {
       } else if (userRole === 'OPERATOR') {
         navigate('/terminal-escaner');
       } else {
-        // Fallback por si el backend devuelve un rol desconocido
         navigate('/');
       }
     } else {

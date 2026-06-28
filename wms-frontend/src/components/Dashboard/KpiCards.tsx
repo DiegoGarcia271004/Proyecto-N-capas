@@ -3,9 +3,9 @@ import { useWms } from '../../context/WmsContext';
 import { Package, AlertTriangle, DollarSign, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export const KpiCards: React.FC = () => {
+
   const { skus, reservations } = useWms();
 
-  // Calcular métricas
   const stockTotal = skus.reduce((acc, item) => acc + item.stock, 0);
   
   const alertasStock = skus.filter(item => item.stock <= item.rop).length;
@@ -14,7 +14,6 @@ export const KpiCards: React.FC = () => {
   
   const pendientes = reservations.filter(r => r.estado !== 'expired').length;
 
-  // Formatear moneda
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
   };

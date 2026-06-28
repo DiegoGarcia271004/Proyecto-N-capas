@@ -89,10 +89,11 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
 
-  // 2. WMS general states
   const [warehouses] = useState<Warehouse[]>(INITIAL_WAREHOUSES);
   const [activeWarehouse, setActiveWarehouseState] = useState<Warehouse>(INITIAL_WAREHOUSES[0]);
+
   const [skus, setSkus] = useState<SkuItem[]>(INITIAL_SKUS);
+
   const [batches, setBatches] = useState<BatchItem[]>(INITIAL_BATCHES);
   const [reservations, setReservations] = useState<Reservation[]>(INITIAL_RESERVATIONS);
   const [policies, setPolicies] = useState<SpatialPolicy[]>(INITIAL_POLICIES);
@@ -130,6 +131,16 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const registerUser = async (username: string, password: string, role: string): Promise<boolean> => {
+    try {
+      await apiClient.post('/auth/register', { username, password, role });
+      return true;
+    } catch (error) {
+      console.error("Failed to register user:", error);
+      return false;
+    }
+  };
+
   const logout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -138,6 +149,32 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setUser(null);
       localStorage.removeItem('wms_session');
+    }
+  };
+
+   const createProduct = async (productData: ProductPayload): Promise<boolean> => {
+    try {
+
+      const response = await apiClient.post('/product', productData);
+
+      if (response.status === 200 || response.status === 201) {
+        console.log(`Producto ${productData.sku} creado con éxito.`);
+        return true;
+      }
+
+      return false;
+    } catch (error: any) {
+
+      if (error.response) {
+        console.error("El servidor rechazó la creación del producto. Estado:", error.response.status);
+        console.error("Detalle del servidor:", error.response.data);
+      } else if (error.request) {
+        console.error("No hubo respuesta del servidor al intentar crear el producto:", error.request);
+      } else {
+        console.error("Error interno de React al procesar el producto:", error.message);
+      }
+
+      return false;
     }
   };
 
@@ -167,7 +204,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             dimsStr = `${item.dimensions.height || 10}x${item.dimensions.width || 10}x${item.dimensions.depth || 10} cm`;
           }
 
-          // Calcular stock en base a lotes en memoria
           const skuBatches = batches.filter((b: any) => b.sku === item.sku);
           const stock = skuBatches.length > 0 ? skuBatches.reduce((acc: number, b: any) => acc + b.cantidad, 0) : 50; // default 50 if no batches yet
 
@@ -423,16 +459,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const registerUser = async (username: string, email: string, role: string): Promise<boolean> => {
-    try {
-      await apiClient.post('/auth/register', { username, email, role, password: 'password123' });
-      return true;
-    } catch (error) {
-      console.error("Failed to register user:", error);
-      return false;
-    }
-  };
-
   const createWarehouse = async (name: string, address: string): Promise<boolean> => {
     try {
       await apiClient.post('/warehouse', { name, address });
@@ -666,6 +692,7 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user,
       login,
       logout,
+      registerUser,
       activeWarehouse,
       warehouses,
       skus,
@@ -687,7 +714,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createReservation,
       confirmReservation,
       releaseReservation,
-      registerUser,
       createWarehouse,
       updateWarehouse,
       deleteWarehouse,

@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="85918811-049c-4ccf-a1f0-9c8aa727ae70" name="Changes" comment="añadiendo restricciones" />
+    <list default="true" id="85918811-049c-4ccf-a1f0-9c8aa727ae70" name="Changes" comment="Fix">
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/KpiCards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/KpiCards.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/Reservations.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/Reservations.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/RopTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/RopTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/RotationAbc.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/components/Dashboard/RotationAbc.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/context/WmsContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/context/WmsContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/core/routes/ProtectedRoute.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/core/routes/ProtectedRoute.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/features/auth/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/features/auth/Login.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/features/inventory/BatchTimeline.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/features/inventory/BatchTimeline.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/features/inventory/SpatialConfig.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/features/inventory/SpatialConfig.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/features/operations/TerminalEscaner.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/features/operations/TerminalEscaner.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wms-frontend/src/shared/layouts/MainLayout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/wms-frontend/src/shared/layouts/MainLayout.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -140,7 +152,7 @@
       <workItem from="1782522885396" duration="4496000" />
       <workItem from="1782553112947" duration="4206000" />
       <workItem from="1782605849644" duration="4906000" />
-      <workItem from="1782622751834" duration="13310000" />
+      <workItem from="1782622751834" duration="17310000" />
     </task>
     <task id="LOCAL-00001" summary="Modificando Login :0">
       <option name="closed" value="true" />
@@ -174,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782677644107</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Fix">
+      <option name="closed" value="true" />
+      <created>1782678486196</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1782678486196</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -196,6 +216,7 @@
     <MESSAGE value="Agregando solicitudes post" />
     <MESSAGE value="Eliminando imagenes, restaurando Login" />
     <MESSAGE value="añadiendo restricciones" />
-    <option name="LAST_COMMIT_MESSAGE" value="añadiendo restricciones" />
+    <MESSAGE value="Fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix" />
   </component>
 </project>
