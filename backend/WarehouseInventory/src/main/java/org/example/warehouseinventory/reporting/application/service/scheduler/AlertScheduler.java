@@ -38,21 +38,18 @@ public class AlertScheduler {
 
         List<LowStockProjection> belowMinStock = productService.findProductsBelowMinStock();
 
-        if (!belowMinStock.isEmpty()) {
+        Set<UUID> belowMinStockIds = belowMinStock.stream()
+                .map(LowStockProjection::getProductId)
+                .collect(Collectors.toSet());
 
-            Set<UUID> belowMinStockIds = belowMinStock.stream()
-                    .map(LowStockProjection::getProductId)
-                    .collect(Collectors.toSet());
+        belowMinStock.forEach(p ->
+                eventPublisher.publishEvent(new LowStockEvent(
+                        p.getProductId(), p.getSku(), p.getName(),
+                        p.getCurrentStock(), p.getMinStockLevel()
+                ))
+        );
 
-            belowMinStock.forEach(p ->
-                    eventPublisher.publishEvent(new LowStockEvent(
-                            p.getProductId(), p.getSku(), p.getName(),
-                            p.getCurrentStock(), p.getMinStockLevel()
-                    ))
-            );
-
-            eventPublisher.publishEvent(new ResolveLowStockEvent(belowMinStockIds));
-        }
+        eventPublisher.publishEvent(new ResolveLowStockEvent(belowMinStockIds));
     }
 
     @Scheduled(fixedRate = 10_000)
@@ -63,23 +60,20 @@ public class AlertScheduler {
 
         List<Lot> expiredLots = lotService.findExpiredLotsWithStock();
 
-        if (!expiredLots.isEmpty()) {
+        Set<UUID> expiredLotsIds = expiredLots.stream()
+                .map(Lot::getId)
+                .collect(Collectors.toSet());
 
-            Set<UUID> expiredLotsIds = expiredLots.stream()
-                    .map(Lot::getId)
-                    .collect(Collectors.toSet());
+        expiredLots.forEach(l ->
+                eventPublisher.publishEvent(new ExpiredLotEvent(
+                        l.getId(), l.getLotNumber(),
+                        l.getProduct().getSku(),
+                        l.getExpirationDate(),
+                        l.getAvailableQuantity()
+                ))
+        );
 
-            expiredLots.forEach(l ->
-                    eventPublisher.publishEvent(new ExpiredLotEvent(
-                            l.getId(), l.getLotNumber(),
-                            l.getProduct().getSku(),
-                            l.getExpirationDate(),
-                            l.getAvailableQuantity()
-                    ))
-            );
-
-            eventPublisher.publishEvent(new ResolveExpiredLotEvent(expiredLotsIds));
-        }
+        eventPublisher.publishEvent(new ResolveExpiredLotEvent(expiredLotsIds));
     }
 
     @Scheduled(fixedRate = 10_000)

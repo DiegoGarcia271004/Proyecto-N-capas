@@ -34,9 +34,9 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
     @Query(value = """
         SELECT COALESCE(SUM(sm.quantity), 0)
         FROM stock_movement sm
-        INNER JOIN lot l ON sm.lot_id = l.id
-        WHERE l.product_id =:product
-        AND l.warehouse_id = :warehouse
+        INNER JOIN lot l ON sm.lot = l.id
+        WHERE l.product_id = :product
+        AND l.warehouse = :warehouse
         AND sm.type = 'EXIT'
         AND sm.created_at >= NOW() - INTERVAL '90 days'
     """, nativeQuery = true)
