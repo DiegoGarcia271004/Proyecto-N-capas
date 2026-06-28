@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useWms } from '../../context/WmsContext';
 import { ChevronDown, ChevronUp, Calendar, MapPin, Layers, Weight, RefreshCw } from 'lucide-react';
 
-// Función de búsqueda Fuzzy (Subsecuencia)
 const fuzzyMatch = (str: string, query: string): boolean => {
   if (!query) return true;
   const cleanStr = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -26,7 +25,6 @@ export const InventoryCatalog: React.FC = () => {
     setExpandedSku(expandedSku === sku ? null : sku);
   };
 
-  // Filtrar los productos por búsqueda Fuzzy y Familia
   const filteredSkus = skus.filter(sku => {
     const matchesFuzzy = fuzzyMatch(sku.sku + ' ' + sku.name, searchQuery);
     const matchesFamily = selectedFamily === 'all' ? true : sku.familia === selectedFamily;

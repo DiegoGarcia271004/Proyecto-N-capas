@@ -109,23 +109,19 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [scanHistory, setScanHistory] = useState<(ScanSimulation & { fecha: Date; tipo: string })[]>([]);
   const [isScannerFocused, setIsScannerFocused] = useState<boolean>(true);
 
-  // Auth Functions
   const login = async (username: string, password: string): Promise<boolean> => {
+
     if (!username.trim()) return false;
-    
+
     try {
-      await apiClient.post('/auth/login', { username, password });
-      
-      // Mapear rol de acuerdo al nombre del usuario ingresado para manejo de rutas en frontend
-      let role: 'admin' | 'manager' | 'operator' = 'operator';
-      if (username.toLowerCase().includes('admin')) {
-        role = 'admin';
-      } else if (username.toLowerCase().includes('jefe') || username.toLowerCase().includes('manager')) {
-        role = 'manager';
-      }
+      const response = await apiClient.post('/auth/login', { username, password });
+
+      const role = response.data.role;
 
       const session: UserSession = { username, role, token: 'session_cookie' };
+
       setUser(session);
+
       localStorage.setItem('wms_session', JSON.stringify(session));
       return true;
     } catch (error) {

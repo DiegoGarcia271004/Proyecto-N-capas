@@ -11,12 +11,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   const { user } = useWms();
 
   if (!user) {
-    // Redirigir a login si no hay sesión activa
+
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirigir al módulo por defecto según su rol si intenta entrar a una ruta no permitida
     if (user.role === 'admin') {
       return <Navigate to="/configuracion-espacial" replace />;
     } else if (user.role === 'manager') {
