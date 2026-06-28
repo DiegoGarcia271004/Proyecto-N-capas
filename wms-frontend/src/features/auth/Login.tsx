@@ -157,6 +157,23 @@ export const Login: React.FC = () => {
         >
           ¿No tienes cuenta? Regístrate
         </button>
+
+        {/* Accesos rápidos de prueba */}
+        <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '10px', fontWeight: 600 }}>
+            ACCESO RÁPIDO PARA PRUEBAS (NUBE)
+          </div>
+          <button
+            onClick={() => {
+              setUsername('admin');
+              setPassword('password123');
+            }}
+            className="wms-btn wms-btn-outline wms-btn-sm"
+            style={{ width: '100%', fontSize: '0.75rem', padding: '8px' }}
+          >
+            🔑 Ingresar como Administrador (admin)
+          </button>
+        </div>
       </div>
     </div>
   );
