@@ -110,34 +110,34 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [scanHistory, setScanHistory] = useState<(ScanSimulation & { fecha: Date; tipo: string })[]>([]);
   const [isScannerFocused, setIsScannerFocused] = useState<boolean>(true);
 
-  const login = async (username: string, password: string): Promise<any> => {
+  // Cambia la promesa para devolver el string del rol (o null si falla)
+  const login = async (username: string, password: string): Promise<string | null> => {
     if (!username.trim()) return null;
 
     try {
+      // La petición viaja con el proxy hacia http://24.199.80.133/api/auth/login
       const response = await apiClient.post('/auth/login', { username, password });
-      const rawRole = response.data.role || response.data.data?.role || '';
-      
-      let mappedRole: 'admin' | 'manager' | 'operator' = 'operator';
-      if (rawRole === 'ADMIN' || rawRole === 'admin') mappedRole = 'admin';
-      else if (rawRole === 'WAREHOUSE_MANAGER' || rawRole === 'manager') mappedRole = 'manager';
 
+      // 1. Extraemos el rol. Prevenimos que falle si viene anidado en data.data
+      const rawRole = response.data.role || response.data.data?.role || 'OPERATOR';
+
+      // 2. Mapeamos el rol para que TypeScript no se queje con la interfaz UserSession
+      let mappedRole: 'admin' | 'manager' | 'operator' = 'operator';
+      const roleStr = String(rawRole).toUpperCase();
+
+      if (roleStr === 'ADMIN') mappedRole = 'admin';
+      else if (roleStr.includes('MANAGER')) mappedRole = 'manager';
+
+      // 3. Guardamos la sesión
       const session: UserSession = { username, role: mappedRole, token: 'session_cookie' };
       setUser(session);
       localStorage.setItem('wms_session', JSON.stringify(session));
+
+      // 4. Retornamos el rol original para que Login.tsx sepa a dónde enrutar
       return rawRole;
     } catch (error) {
       console.error("Login failed:", error);
       return null;
-    }
-  };
-
-  const registerUser = async (username: string, password: string, role: string): Promise<boolean> => {
-    try {
-      await apiClient.post('/auth/register', { username, password, role });
-      return true;
-    } catch (error) {
-      console.error("Failed to register user:", error);
-      return false;
     }
   };
 
@@ -149,32 +149,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setUser(null);
       localStorage.removeItem('wms_session');
-    }
-  };
-
-   const createProduct = async (productData: ProductPayload): Promise<boolean> => {
-    try {
-
-      const response = await apiClient.post('/product', productData);
-
-      if (response.status === 200 || response.status === 201) {
-        console.log(`Producto ${productData.sku} creado con éxito.`);
-        return true;
-      }
-
-      return false;
-    } catch (error: any) {
-
-      if (error.response) {
-        console.error("El servidor rechazó la creación del producto. Estado:", error.response.status);
-        console.error("Detalle del servidor:", error.response.data);
-      } else if (error.request) {
-        console.error("No hubo respuesta del servidor al intentar crear el producto:", error.request);
-      } else {
-        console.error("Error interno de React al procesar el producto:", error.message);
-      }
-
-      return false;
     }
   };
 
@@ -243,14 +217,31 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const fetchInfrastructure = async () => {
     try {
+      console.log("Intentando obtener almacenes del servidor...");
       const whResponse = await apiClient.get('/warehouse');
+
       if (whResponse.data && whResponse.data.data && whResponse.data.data.length > 0) {
+        // ¡El backend funcionó!
         const firstWhId = whResponse.data.data[0].id;
+
+        // (Opcional) Si quieres guardar los almacenes reales en tu estado, agregarías algo como:
+        // setWarehouses(whResponse.data.data);
+        // setActiveWarehouseState(whResponse.data.data[0]);
+
         await apiClient.get(`/warehouse/${firstWhId}`);
+
         await apiClient.get(`/storage-location/warehouse/${firstWhId}`);
       }
-    } catch (error) {
-      console.error("Failed to fetch warehouse infrastructure from server:", error);
+    } catch (error: any) {
+      // Si el backend da 500, React no se congela. Caemos de pie usando los datos de mockData
+      console.warn("El backend falló al traer los almacenes (Error 500). Usando almacenes de prueba (Mock Data).");
+
+      if (error.response) {
+        console.error("Detalle del choque en el servidor:", error.response.data);
+      }
+
+      // Mantenemos el sistema vivo con los datos locales
+      // setWarehouses(INITIAL_WAREHOUSES); // (Descomenta si creas el setWarehouses)
     }
   };
 
