@@ -1,20 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWms } from '../../context/WmsContext';
 import { PieChart } from 'lucide-react';
+import apiClient from '../../core/api/apiClient';
 
 export const RotationAbc: React.FC = () => {
   const { skus } = useWms();
   const [hoveredZone, setHoveredZone] = useState<{ nombre: string; stock: number; pct: number; color: string } | null>(null);
+  const [abcReport, setAbcReport] = useState<any>(null);
 
-  // Calcular totales por zona
-  const stockA = skus.filter(s => s.zona === 'A').reduce((acc, s) => acc + s.stock, 0);
-  const stockB = skus.filter(s => s.zona === 'B').reduce((acc, s) => acc + s.stock, 0);
-  const stockC = skus.filter(s => s.zona === 'C').reduce((acc, s) => acc + s.stock, 0);
-  const stockTotal = stockA + stockB + stockC;
+  useEffect(() => {
+    const fetchAbcReport = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const res = await apiClient.get(`/reporting/abc?from=${sixMonthsAgo}&to=${today}`);
+        if (res.data && res.data.data) {
+          setAbcReport(res.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch ABC report:", error);
+      }
+    };
+    fetchAbcReport();
+  }, []);
 
-  const pctA = stockTotal ? (stockA / stockTotal) * 100 : 0;
-  const pctB = stockTotal ? (stockB / stockTotal) * 100 : 0;
-  const pctC = stockTotal ? (stockC / stockTotal) * 100 : 0;
+  // Calcular totales por zona (usando datos del backend si están disponibles, o fallando al cálculo por stock)
+  let stockA = skus.filter(s => s.zona === 'A').reduce((acc, s) => acc + s.stock, 0);
+  let stockB = skus.filter(s => s.zona === 'B').reduce((acc, s) => acc + s.stock, 0);
+  let stockC = skus.filter(s => s.zona === 'C').reduce((acc, s) => acc + s.stock, 0);
+
+  if (abcReport && abcReport.classifiedItems && abcReport.classifiedItems.length > 0) {
+    const items = abcReport.classifiedItems;
+    stockA = items.filter((i: any) => i.category === 'A').reduce((acc: number, i: any) => acc + i.totalExitQuantity, 0);
+    stockB = items.filter((i: any) => i.category === 'B').reduce((acc: number, i: any) => acc + i.totalExitQuantity, 0);
+    stockC = items.filter((i: any) => i.category === 'C').reduce((acc: number, i: any) => acc + i.totalExitQuantity, 0);
+  }
+
+  const stockTotal = stockA + stockB + stockC || 1;
+
+  const pctA = (stockA / stockTotal) * 100;
+  const pctB = (stockB / stockTotal) * 100;
+  const pctC = (stockC / stockTotal) * 100;
 
   // Parámetros del círculo SVG
   const radius = 50;

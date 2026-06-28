@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import apiClient from '../core/api/apiClient';
 import type { 
   SkuItem, 
   BatchItem, 
@@ -29,8 +30,8 @@ interface UserSession {
 interface WmsContextType {
   // Session State
   user: UserSession | null;
-  login: (username: string, role: 'admin' | 'manager' | 'operator') => boolean;
-  logout: () => void;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
 
   // General WMS State
   activeWarehouse: Warehouse;
@@ -41,6 +42,8 @@ interface WmsContextType {
   policies: SpatialPolicy[];
   transfers: TransferOrder[];
   audits: AuditRecord[];
+  notifications: any[];
+  fetchNotifications: () => Promise<void>;
   
   // Controls
   searchQuery: string;
@@ -53,6 +56,9 @@ interface WmsContextType {
   rejectTransfer: (id: string) => void;
   registerCycleCount: (skuCode: string, pasillo: string, rack: string, nivel: string, contado: number) => void; // Operario a ciegas
   approveRopReplenish: (skuId: string) => void;
+  createReservation: (sku: string, quantity: number) => Promise<boolean>;
+  confirmReservation: (id: string) => Promise<boolean>;
+  releaseReservation: (id: string) => Promise<boolean>;
   
   // Terminal states & actions
   scanMode: 'entrada' | 'salida';
@@ -85,6 +91,7 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [policies, setPolicies] = useState<SpatialPolicy[]>(INITIAL_POLICIES);
   const [transfers, setTransfers] = useState<TransferOrder[]>(INITIAL_TRANSFERS);
   const [audits, setAudits] = useState<AuditRecord[]>(INITIAL_AUDITS);
+  const [notifications, setNotifications] = useState<any[]>([]);
   
   const [searchQuery, setSearchQuery] = useState<string>('');
   
@@ -96,36 +103,129 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isScannerFocused, setIsScannerFocused] = useState<boolean>(true);
 
   // Auth Functions
-  const login = (username: string, role: 'admin' | 'manager' | 'operator'): boolean => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     if (!username.trim()) return false;
     
-    // Generar un token JWT ficticio
-    const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-    const payload = btoa(JSON.stringify({ sub: username, role: role, exp: Math.floor(Date.now() / 1000) + 3600 }));
-    const signature = "signature_xyz";
-    const token = `${header}.${payload}.${signature}`;
+    try {
+      await apiClient.post('/auth/login', { username, password });
+      
+      // Mapear rol de acuerdo al nombre del usuario ingresado para manejo de rutas en frontend
+      let role: 'admin' | 'manager' | 'operator' = 'operator';
+      if (username.toLowerCase().includes('admin')) {
+        role = 'admin';
+      } else if (username.toLowerCase().includes('jefe') || username.toLowerCase().includes('manager')) {
+        role = 'manager';
+      }
 
-    const session: UserSession = { username, role, token };
-    setUser(session);
-    localStorage.setItem('wms_session', JSON.stringify(session));
-    return true;
+      const session: UserSession = { username, role, token: 'session_cookie' };
+      setUser(session);
+      localStorage.setItem('wms_session', JSON.stringify(session));
+      return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('wms_session');
+  const logout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('wms_session');
+    }
   };
+
+  const fetchSkus = async () => {
+    try {
+      const response = await apiClient.get('/product/inactive');
+      const data = response.data.data;
+      if (Array.isArray(data)) {
+        const mappedSkus: SkuItem[] = data.map((item: any) => {
+          let familia: 'Ferretería' | 'Eléctricos' | 'Químicos' | 'Logística' = 'Logística';
+          let zona: 'A' | 'B' | 'C' = 'A';
+          const cat = item.category || '';
+          
+          if (cat === 'TOOLS' || cat === 'MACHINERY_PARTS' || cat === 'HOME_GOODS' || cat === 'COMPONENTS') {
+            familia = 'Ferretería';
+            zona = 'A';
+          } else if (cat === 'ELECTRONICS' || cat === 'ACCESSORIES') {
+            familia = 'Eléctricos';
+            zona = 'B';
+          } else if (cat === 'CHEMICALS' || cat === 'PHARMACEUTICAL' || cat === 'CLEANING_SUPPLIES') {
+            familia = 'Químicos';
+            zona = 'C';
+          }
+
+          let dimsStr = '10x10x10 cm';
+          if (item.dimensions) {
+            dimsStr = `${item.dimensions.height || 10}x${item.dimensions.width || 10}x${item.dimensions.depth || 10} cm`;
+          }
+
+          // Calcular stock en base a lotes en memoria
+          const skuBatches = batches.filter((b: any) => b.sku === item.sku);
+          const stock = skuBatches.length > 0 ? skuBatches.reduce((acc: number, b: any) => acc + b.cantidad, 0) : 50; // default 50 if no batches yet
+
+          return {
+            id: item.id || '',
+            sku: item.sku || '',
+            name: item.name || '',
+            zona,
+            stock,
+            rop: item.minStockLevel || 100,
+            sugerido: item.reorderPoint || 200,
+            costo: 0.12,
+            costoPromedio: 0.15,
+            unidad: 'unidades',
+            peso: item.weight?.value || 0.1,
+            dimensiones: dimsStr,
+            familia
+          };
+        });
+        setSkus(mappedSkus);
+      }
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await apiClient.get('/notifications/unread');
+      if (response.data && Array.isArray(response.data.data)) {
+        setNotifications(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchSkus();
+      fetchNotifications();
+    } else {
+      setSkus([]);
+      setNotifications([]);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    setSkus(prevSkus => 
+      prevSkus.map(sku => {
+        const skuBatches = batches.filter(b => b.sku === sku.sku);
+        const stock = skuBatches.length > 0 ? skuBatches.reduce((acc, b) => acc + b.cantidad, 0) : sku.stock;
+        return { ...sku, stock };
+      })
+    );
+  }, [batches]);
 
   // Selector de almacén
   const setActiveWarehouse = (wh: Warehouse) => {
     setActiveWarehouseState(wh);
-    const multiplier = wh.id === '1' ? 1.0 : wh.id === '2' ? 0.75 : 0.5;
-    
-    // Actualizar stocks en base al almacén
-    setSkus(INITIAL_SKUS.map(sku => ({
-      ...sku,
-      stock: Math.round(sku.stock * multiplier),
-    })));
+    fetchSkus();
   };
 
   // Simulación del PUT del Administrador para cambiar reglas
@@ -139,38 +239,45 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Aprobación de reabastecimiento ROP
-  const approveRopReplenish = (skuId: string) => {
-    setSkus(prevSkus => 
-      prevSkus.map(sku => {
-        if (sku.id === skuId) {
-          const newStock = sku.stock + sku.sugerido;
-          // Recalcular WAC (Costo Promedio Ponderado)
-          // Fórmula: WAC = (Q1 * C1 + Q_added * C_original) / (Q1 + Q_added)
-          const newWac = ((sku.stock * sku.costoPromedio) + (sku.sugerido * sku.costo)) / newStock;
-          
-          // Crear un lote correspondiente
-          const newBatch: BatchItem = {
-            id: `b-rop-${Date.now()}`,
-            sku: sku.sku,
-            codigoLote: `LOTE-ROP-${new Date().getFullYear()}`,
-            cantidad: sku.sugerido,
-            fechaCaducidad: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 12).toISOString().substring(0, 10), // 12 meses
-            pasillo: 'PASILLO 1',
-            rack: 'RACK A',
-            nivel: 'NIVEL 1',
-            fechaIngreso: new Date().toISOString().substring(0, 10)
-          };
-          setBatches(prev => [...prev, newBatch]);
-          
-          return {
-            ...sku,
-            stock: newStock,
-            costoPromedio: parseFloat(newWac.toFixed(2))
-          };
-        }
-        return sku;
-      })
-    );
+  const approveRopReplenish = async (skuId: string) => {
+    const skuItem = skus.find(s => s.id === skuId);
+    if (!skuItem) return;
+
+    const lotCode = `LOTE-ROP-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`;
+    const quantity = skuItem.sugerido;
+    const unitCost = skuItem.costo;
+    const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 12).toISOString().substring(0, 10); // 12 meses
+
+    let warehouseUuid = "11111111-1111-1111-1111-111111111111"; // Default Madrid
+    if (activeWarehouse.id === '2') warehouseUuid = "22222222-2222-2222-2222-222222222222";
+    else if (activeWarehouse.id === '3') warehouseUuid = "33333333-3333-3333-3333-333333333333";
+
+    try {
+      await apiClient.post('/inventory/entry', {
+        product: skuItem.id,
+        warehouse: warehouseUuid,
+        lotNumber: lotCode,
+        quantity: quantity,
+        unitCost: unitCost,
+        expirationDate: expirationDate
+      });
+
+      // Crear un lote correspondiente
+      const newBatch: BatchItem = {
+        id: `b-rop-${Date.now()}`,
+        sku: skuItem.sku,
+        codigoLote: lotCode,
+        cantidad: quantity,
+        fechaCaducidad: expirationDate,
+        pasillo: 'PASILLO 1',
+        rack: 'RACK A',
+        nivel: 'NIVEL 1',
+        fechaIngreso: new Date().toISOString().substring(0, 10)
+      };
+      setBatches(prev => [...prev, newBatch]);
+    } catch (error) {
+      console.error("Failed to approve ROP replenishment:", error);
+    }
   };
 
   // Aprobación de traslados (Manager)
@@ -190,6 +297,59 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTransfers(prev => 
       prev.map(t => (t.id === id ? { ...t, estado: 'rechazado' } : t))
     );
+  };
+
+  const createReservation = async (sku: string, quantity: number): Promise<boolean> => {
+    const skuItem = skus.find(s => s.sku === sku);
+    if (!skuItem) return false;
+
+    try {
+      await apiClient.post('/reservation', {
+        product: skuItem.id,
+        quantity,
+        expirationMinutes: 10
+      });
+      
+      const newRes: Reservation = {
+        id: `res-${Date.now()}`,
+        orden: `ORD-${Math.floor(Math.random() * 100000)}`,
+        cliente: 'Cliente General',
+        almacenDestino: activeWarehouse.nombre,
+        sku,
+        cantidad: quantity,
+        tiempoRestante: 600,
+        estado: 'active'
+      };
+      setReservations(prev => [...prev, newRes]);
+      return true;
+    } catch (error) {
+      console.error("Failed to create reservation:", error);
+      return false;
+    }
+  };
+
+  const confirmReservation = async (id: string): Promise<boolean> => {
+    try {
+      const dummyUuid = "11111111-1111-1111-3333-111111111111"; 
+      await apiClient.put(`/reservation/confirm/${dummyUuid}`);
+      setReservations(prev => prev.filter(r => r.id !== id));
+      return true;
+    } catch (error) {
+      console.error("Failed to confirm reservation:", error);
+      return false;
+    }
+  };
+
+  const releaseReservation = async (id: string): Promise<boolean> => {
+    try {
+      const dummyUuid = "11111111-1111-1111-3333-111111111111"; 
+      await apiClient.put(`/reservation/release/${dummyUuid}`);
+      setReservations(prev => prev.map(r => r.id === id ? { ...r, tiempoRestante: 0, estado: 'expired' } : r));
+      return true;
+    } catch (error) {
+      console.error("Failed to release reservation:", error);
+      return false;
+    }
   };
 
   // Registro de conteo a ciegas (Operario)
@@ -294,69 +454,89 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Confirmar lectura
-  const confirmScan = () => {
+  const confirmScan = async () => {
     if (!lastScan) return;
 
-    // Agregar al historial de escaneo
-    setScanHistory(prev => [
-      { ...lastScan, fecha: new Date(), tipo: scanMode === 'entrada' ? 'Ingreso' : 'Egreso' },
-      ...prev
-    ]);
+    const skuItem = skus.find(s => s.sku === lastScan.sku);
+    if (!skuItem) return;
 
-    // Modificar stock y crear lote en caso de entrada
-    setSkus(prevSkus => 
-      prevSkus.map(sku => {
-        if (sku.sku === lastScan.sku) {
-          const qtyDiff = scanMode === 'entrada' ? 100 : -100; // Incremento o extracción estándar por lote
-          const nextStock = Math.max(0, sku.stock + qtyDiff);
-          
-          // Calcular nuevo costo promedio ponderado en entrada
-          let nextWac = sku.costoPromedio;
-          if (scanMode === 'entrada') {
-            nextWac = ((sku.stock * sku.costoPromedio) + (100 * sku.costo)) / nextStock;
-          }
-
-          return { 
-            ...sku, 
-            stock: nextStock,
-            costoPromedio: parseFloat(nextWac.toFixed(2))
-          };
-        }
-        return sku;
-      })
-    );
+    let warehouseUuid = "11111111-1111-1111-1111-111111111111"; // Default Madrid
+    if (activeWarehouse.id === '2') warehouseUuid = "22222222-2222-2222-2222-222222222222";
+    else if (activeWarehouse.id === '3') warehouseUuid = "33333333-3333-3333-3333-333333333333";
 
     if (scanMode === 'entrada') {
-      // Registrar nuevo lote
-      const newBatch: BatchItem = {
-        id: `b-scan-${Date.now()}`,
-        sku: lastScan.sku,
-        codigoLote: lastScan.lote,
-        cantidad: 100,
-        fechaCaducidad: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 6).toISOString().substring(0, 10), // 6 meses
-        pasillo: lastScan.ubicacionSugerida.pasillo,
-        rack: lastScan.ubicacionSugerida.rack,
-        nivel: lastScan.ubicacionSugerida.nivel,
-        fechaIngreso: new Date().toISOString().substring(0, 10)
-      };
-      setBatches(prev => [...prev, newBatch]);
+      const lotCode = lastScan.lote;
+      const quantity = 100;
+      const unitCost = skuItem.costo;
+      const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000 * 6).toISOString().substring(0, 10); // 6 meses
+
+      try {
+        await apiClient.post('/inventory/entry', {
+          product: skuItem.id,
+          warehouse: warehouseUuid,
+          lotNumber: lotCode,
+          quantity: quantity,
+          unitCost: unitCost,
+          expirationDate: expirationDate
+        });
+
+        // Registrar nuevo lote en memoria
+        const newBatch: BatchItem = {
+          id: `b-scan-${Date.now()}`,
+          sku: lastScan.sku,
+          codigoLote: lotCode,
+          cantidad: quantity,
+          fechaCaducidad: expirationDate,
+          pasillo: lastScan.ubicacionSugerida.pasillo,
+          rack: lastScan.ubicacionSugerida.rack,
+          nivel: lastScan.ubicacionSugerida.nivel,
+          fechaIngreso: new Date().toISOString().substring(0, 10)
+        };
+        setBatches(prev => [...prev, newBatch]);
+
+        // Agregar al historial de escaneo
+        setScanHistory(prev => [
+          { ...lastScan, fecha: new Date(), tipo: 'Ingreso' },
+          ...prev
+        ]);
+      } catch (error) {
+        console.error("Scan entry failed:", error);
+      }
     } else {
-      // Extracción FIFO: restamos del lote más antiguo (FIFO)
-      const matchingBatches = [...batches]
-        .filter(b => b.sku === lastScan.sku)
-        .sort((a, b) => new Date(a.fechaCaducidad).getTime() - new Date(b.fechaCaducidad).getTime());
-      
-      let extractQty = 100;
-      const updatedBatches = batches.map(b => {
-        if (matchingBatches.length > 0 && b.id === matchingBatches[0].id) {
-          const nextQty = Math.max(0, b.cantidad - extractQty);
-          extractQty = Math.max(0, extractQty - b.cantidad);
-          return { ...b, cantidad: nextQty };
-        }
-        return b;
-      }).filter(b => b.cantidad > 0); // eliminar lotes agotados
-      
-      setBatches(updatedBatches);
+      // Outbound (Salida)
+      const quantity = 100;
+      try {
+        await apiClient.post('/inventory/consume', {
+          product: skuItem.id,
+          warehouse: warehouseUuid,
+          quantity: quantity
+        });
+
+        // Extracción FIFO: restamos del lote más antiguo (FIFO)
+        const matchingBatches = [...batches]
+          .filter(b => b.sku === lastScan.sku)
+          .sort((a, b) => new Date(a.fechaCaducidad).getTime() - new Date(b.fechaCaducidad).getTime());
+        
+        let extractQty = quantity;
+        const updatedBatches = batches.map(b => {
+          if (matchingBatches.length > 0 && b.id === matchingBatches[0].id) {
+            const nextQty = Math.max(0, b.cantidad - extractQty);
+            extractQty = Math.max(0, extractQty - b.cantidad);
+            return { ...b, cantidad: nextQty };
+          }
+          return b;
+        }).filter(b => b.cantidad > 0);
+        
+        setBatches(updatedBatches);
+
+        // Agregar al historial de escaneo
+        setScanHistory(prev => [
+          { ...lastScan, fecha: new Date(), tipo: 'Egreso' },
+          ...prev
+        ]);
+      } catch (error) {
+        console.error("Scan consume failed:", error);
+      }
     }
 
     setLastScan(null);
@@ -381,6 +561,8 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       policies,
       transfers,
       audits,
+      notifications,
+      fetchNotifications,
       searchQuery,
       setSearchQuery,
       setActiveWarehouse,
@@ -389,6 +571,9 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       rejectTransfer,
       registerCycleCount,
       approveRopReplenish,
+      createReservation,
+      confirmReservation,
+      releaseReservation,
       
       // Terminal
       scanMode,

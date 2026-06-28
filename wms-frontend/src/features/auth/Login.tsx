@@ -12,20 +12,25 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) {
       setError('Por favor, ingresa tu usuario y contraseña');
       return;
     }
 
-    const success = login(username, role);
+    const success = await login(username, password);
     if (success) {
-      if (role === 'admin') navigate('/configuracion-espacial');
-      else if (role === 'manager') navigate('/dashboard-analitico');
+      let targetRole = role;
+      if (username.toLowerCase().includes('admin')) targetRole = 'admin';
+      else if (username.toLowerCase().includes('jefe') || username.toLowerCase().includes('manager')) targetRole = 'manager';
+      else targetRole = 'operator';
+
+      if (targetRole === 'admin') navigate('/configuracion-espacial');
+      else if (targetRole === 'manager') navigate('/dashboard-analitico');
       else navigate('/terminal-escaner');
     } else {
-      setError('Credenciales inválidas');
+      setError('Usuario o contraseña incorrectos');
     }
   };
 
