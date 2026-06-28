@@ -1,9 +1,11 @@
 import React from 'react';
 import { useWms } from '../../context/WmsContext';
-import { Sliders, Check, HelpCircle, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sliders, Check, HelpCircle, Save, UserPlus } from 'lucide-react';
 
 export const SpatialConfig: React.FC = () => {
   const { policies, updatePolicy } = useWms();
+  const navigate = useNavigate();
 
   const handleSavePolicy = (id: string) => {
     // Simula una petición PUT
@@ -12,11 +14,21 @@ export const SpatialConfig: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Configuración Espacial del Almacén</h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-          Módulo de control del Administrador. Gestiona las reglas de distribución de mercancías.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Configuración Espacial del Almacén</h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            Módulo de control del Administrador. Gestiona las reglas de distribución de mercancías.
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/register')}
+          className="wms-btn wms-btn-primary"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', fontSize: '0.85rem' }}
+        >
+          <UserPlus size={16} />
+          <span>Registrar Usuario</span>
+        </button>
       </div>
 
       <div className="wms-card" style={{ padding: '24px', marginBottom: '20px' }}>
