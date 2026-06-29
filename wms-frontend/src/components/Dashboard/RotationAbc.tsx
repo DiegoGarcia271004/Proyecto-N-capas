@@ -4,7 +4,9 @@ import { PieChart } from 'lucide-react';
 import apiClient from '../../core/api/apiClient';
 
 export const RotationAbc: React.FC = () => {
+
   const { skus } = useWms();
+
   const [hoveredZone, setHoveredZone] = useState<{ nombre: string; stock: number; pct: number; color: string } | null>(null);
   const [abcReport, setAbcReport] = useState<any>(null);
 

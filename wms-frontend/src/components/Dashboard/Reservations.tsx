@@ -3,6 +3,7 @@ import { useWms } from '../../context/WmsContext';
 import { Clock, Hourglass, AlertCircle } from 'lucide-react';
 
 export const Reservations: React.FC = () => {
+
   const { reservations } = useWms();
 
   // Formatear segundos a MM:SS

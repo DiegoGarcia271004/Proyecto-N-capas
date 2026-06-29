@@ -5,7 +5,6 @@ import { Calendar, AlertCircle, ShieldAlert, Sparkles, MapPin } from 'lucide-rea
 export const BatchTimeline: React.FC = () => {
   const { batches, skus } = useWms();
 
-  // Calcular vida útil restante en días y porcentaje
   const calculateShelfLife = (caducidadStr: string, ingresoStr: string) => {
     const today = Date.now();
     const expTime = new Date(caducidadStr).getTime();

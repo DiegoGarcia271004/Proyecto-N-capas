@@ -37,10 +37,8 @@ export const MainLayout: React.FC = () => {
     navigate('/login');
   };
 
-  // Calcular alertas de stock mínimo para el Jefe de Almacén
   const lowStockCount = skus.filter(s => s.stock <= s.rop).length;
 
-  // Renderizar la barra de navegación lateral según el rol (Administrador vs Manager)
   const renderSidebarLinks = () => {
     if (user.role === 'admin') {
       return (

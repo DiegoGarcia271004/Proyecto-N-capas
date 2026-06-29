@@ -3,9 +3,9 @@ import { useWms } from '../../context/WmsContext';
 import { RefreshCw, Play, CheckCircle2 } from 'lucide-react';
 
 export const RopTable: React.FC = () => {
+
   const { skus, approveRopReplenish } = useWms();
 
-  // Filtrar los SKUs que necesitan reabastecerse (stock <= ROP)
   const reorderSkus = skus.filter(sku => sku.stock <= sku.rop);
 
   return (

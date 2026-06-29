@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://24.199.80.133', // La URL de tu backend
-        changeOrigin: true, // Esto engaña al backend para que no sepa que eres un localhost
+        target: 'http://24.199.80.133',
+        changeOrigin: true, 
       }
     }
   }

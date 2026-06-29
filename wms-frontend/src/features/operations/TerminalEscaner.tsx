@@ -30,7 +30,6 @@ export const TerminalEscaner: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Asegurar que el input invisible mantenga el foco
   useEffect(() => {
     const focusInput = () => {
       if (inputRef.current) {
@@ -40,8 +39,7 @@ export const TerminalEscaner: React.FC = () => {
     };
 
     focusInput();
-
-    // Reenfocar al hacer clic en cualquier lugar del terminal móvil
+    
     const deviceElement = document.getElementById('wms-handheld-simulator');
     if (deviceElement) {
       deviceElement.addEventListener('click', focusInput);
