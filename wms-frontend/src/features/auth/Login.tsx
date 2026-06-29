@@ -23,7 +23,7 @@ export const Login: React.FC = () => {
     setError('');
     const userRole = await login(username, password);
 
-    if (userRole !== null && userRole !== false) {
+    if (userRole !== null) {
 
       const roleStr = String(userRole).toUpperCase();
 
