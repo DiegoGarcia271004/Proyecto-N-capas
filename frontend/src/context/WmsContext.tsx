@@ -60,7 +60,9 @@ interface WmsContextType {
   policies: SpatialPolicy[];
   transfers: TransferOrder[];
   audits: AuditRecord[];
+  notifications: any[];
   fetchNotifications: () => Promise<void>;
+  fetchSkus: () => Promise<void>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   setActiveWarehouse: (wh: Warehouse) => void;
@@ -124,7 +126,7 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const response = await apiClient.post('/auth/login', { username, password });
 
-      const rawRole = response.data.role
+      const rawRole = response.data.data.role
 
       const session: UserSession = { username, role: rawRole, token: 'session_cookie' };
       setUser(session);
@@ -403,7 +405,7 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
       <WmsContext.Provider value={{
         user, login, logout, registerUser, activeWarehouse, warehouses, skus, batches, reservations, policies, transfers, audits, notifications,
-        fetchNotifications, searchQuery, setSearchQuery, setActiveWarehouse, updatePolicy, approveTransfer, rejectTransfer, registerCycleCount,
+        fetchNotifications, fetchSkus, searchQuery, setSearchQuery, setActiveWarehouse, updatePolicy, approveTransfer, rejectTransfer, registerCycleCount,
         approveRopReplenish, createReservation, confirmReservation, releaseReservation, createWarehouse, updateWarehouse, deleteWarehouse,
         activateWarehouse, createStorageLocation, getStorageLocationDetails, createProduct,
         scanMode, setScanMode, lastScan, scanStatus, scanHistory, isScannerFocused, setIsScannerFocused, processScan, confirmScan, resetLastScan

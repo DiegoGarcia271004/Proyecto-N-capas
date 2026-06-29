@@ -169,7 +169,8 @@ class StockConsumptionServiceTest {
                 Dimensions.of(new BigDecimal("10.5"), new BigDecimal("20.0"), new BigDecimal("5.0"), DimensionUnit.CM),
                 Weight.of(new BigDecimal("1.250"), WeightUnit.KG),
                 10, 20,
-                ProductCategory.ELECTRONICS, StorageRequirement.AMBIENT
+                ProductCategory.ELECTRONICS, StorageRequirement.AMBIENT,
+                5, 15
         );
         ReflectionTestUtils.setField(product, "id", id);
         return product;

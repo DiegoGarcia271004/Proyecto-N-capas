@@ -14,11 +14,11 @@ spring:
         format_sql: false
 
 app:
-  csrf-enabled: true
+  csrf-enabled: false
 
 jwt:
   expiration-minutes: 30
-  cookie-secure: true
+  cookie-secure: false
 
 springdoc:
   swagger-ui:

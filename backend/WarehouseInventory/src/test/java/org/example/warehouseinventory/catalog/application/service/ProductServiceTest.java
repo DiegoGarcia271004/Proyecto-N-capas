@@ -322,7 +322,9 @@ class ProductServiceTest {
                         new BigDecimal("20.0"),
                         new BigDecimal("5.0"),
                         DimensionUnit.CM),
-                StorageRequirement.AMBIENT
+                StorageRequirement.AMBIENT,
+                5,
+                15
         );
     }
 
@@ -337,7 +339,9 @@ class ProductServiceTest {
                         new BigDecimal("20.0"),
                         new BigDecimal("5.0"),
                         DimensionUnit.CM),
-                StorageRequirement.AMBIENT
+                StorageRequirement.AMBIENT,
+                5,
+                15
         );
     }
 
@@ -353,7 +357,9 @@ class ProductServiceTest {
                 10, 20,
                 ProductCategory.ELECTRONICS,
                 StorageRequirement.AMBIENT,
-                true
+                true,
+                5,
+                15
         );
     }
 }

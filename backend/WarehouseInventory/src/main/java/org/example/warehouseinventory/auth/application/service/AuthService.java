@@ -27,7 +27,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserMapper userMapper;
 
-    public void login(LoginRequest req, HttpServletResponse res) {
+    public UserResponse login(LoginRequest req, HttpServletResponse res) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.username(), req.password())
         );
@@ -36,6 +36,7 @@ public class AuthService {
         String token = jwtService.generateToken(user);
 
         res.addCookie(jwtService.createTokenCookie(token));
+        return userMapper.toDto(user);
     }
 
     public void logout(HttpServletResponse res) {
