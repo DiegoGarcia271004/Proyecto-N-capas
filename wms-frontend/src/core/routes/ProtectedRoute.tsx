@@ -4,7 +4,7 @@ import { useWms } from '../../context/WmsContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('admin' | 'manager' | 'operator')[];
+  allowedRoles?: ('ADMIN' | 'MANAGER' | 'OPERATOR')[];
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
@@ -17,9 +17,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    if (user.role === 'admin') {
+    if (user.role === 'ADMIN') {
       return <Navigate to="/configuracion-espacial" replace />;
-    } else if (user.role === 'manager') {
+    } else if (user.role === 'MANAGER') {
       return <Navigate to="/dashboard-analitico" replace />;
     } else {
       return <Navigate to="/terminal-escaner" replace />;

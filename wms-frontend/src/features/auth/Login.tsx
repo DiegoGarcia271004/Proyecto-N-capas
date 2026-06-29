@@ -20,29 +20,23 @@ export const Login: React.FC = () => {
       return;
     }
 
-    // Limpiamos errores previos al intentar de nuevo
     setError('');
     const userRole = await login(username, password);
 
-    // Si userRole es diferente de null o false, el login FUE EXITOSO
     if (userRole !== null && userRole !== false) {
 
-      // Convertimos el rol a mayúsculas de forma segura, incluso si es un booleano antiguo
       const roleStr = String(userRole).toUpperCase();
 
       if (roleStr === 'ADMIN') {
         navigate('/configuracion-espacial');
-      } else if (roleStr === 'WAREHOUSE_MANAGER' || roleStr === 'MANAGER') {
+      } else if (roleStr === 'WAREHOUSE_MANAGER') {
         navigate('/dashboard-analitico');
       } else if (roleStr === 'OPERATOR') {
         navigate('/terminal-escaner');
       } else {
-        // FALLBACK VITAL: Si el login es exitoso pero el rol viene vacío ('') o es desconocido,
-        // lo enviamos a la raíz para no dejarlo atrapado en la pantalla de error.
         navigate('/');
       }
     } else {
-      // Solo entra aquí si Axios tira un error 401/403 o la red falla
       setError('Usuario o contraseña incorrectos');
     }
   };
