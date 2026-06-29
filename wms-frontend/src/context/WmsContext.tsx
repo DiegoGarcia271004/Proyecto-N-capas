@@ -118,20 +118,14 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [scanHistory, setScanHistory] = useState<(ScanSimulation & { fecha: Date; tipo: string })[]>([]);
   const [isScannerFocused, setIsScannerFocused] = useState<boolean>(true);
 
-  // --- LOGIN ARREGLADO ---
   const login = async (username: string, password: string): Promise<string | null> => {
     if (!username.trim()) return null;
     try {
       const response = await apiClient.post('/auth/login', { username, password });
-      const rawRole = response.data.role || response.data.data?.role || 'OPERATOR';
 
-      let mappedRole: 'ADMIN' | 'MANAGER' | 'OPERATOR' = 'OPERATOR';
-      const roleStr = String(rawRole).toUpperCase();
+      const rawRole = response.data.role
 
-      if (roleStr === 'ADMIN') mappedRole = 'ADMIN';
-      else if (roleStr.includes('MANAGER')) mappedRole = 'MANAGER';
-
-      const session: UserSession = { username, role: mappedRole, token: 'session_cookie' };
+      const session: UserSession = { username, role: rawRole, token: 'session_cookie' };
       setUser(session);
       localStorage.setItem('wms_session', JSON.stringify(session));
 
@@ -163,6 +157,29 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const fetchInfrastructure = async () => {
+    try {
+      const whResponse = await apiClient.get('/warehouse');
+
+      if (whResponse.data && whResponse.data.data && whResponse.data.data.length > 0) {
+        const firstWhId = whResponse.data.data[0].id;
+
+        await apiClient.get(`/warehouse/${firstWhId}`);
+
+        await apiClient.get(`/storage-location/warehouse/${firstWhId}`);
+      }
+    } catch (error: any) {
+
+      console.warn("El backend falló al traer los almacenes (Error 500). Usando almacenes de prueba (Mock Data).");
+
+    }
+  };
+
+  const setActiveWarehouse = (wh: Warehouse) => {
+    setActiveWarehouseState(wh);
+    fetchSkus();
+  };
+
   const createProduct = async (productData: ProductPayload): Promise<boolean> => {
     try {
       const response = await apiClient.post('/product', productData);
@@ -171,6 +188,17 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error: any) {
       console.error("Error al crear producto:", error.response?.data || error.message);
       return false;
+    }
+  };
+
+  const updatePolicy = async (policyId: string) => {
+    setPolicies(prev => prev.map(p => ({ ...p, activa: p.id === policyId })));
+    try {
+      const warehouseUuid = activeWarehouse.id === '2' ? "22222222-2222-2222-2222-222222222222" : activeWarehouse.id === '3' ? "33333333-3333-3333-3333-333333333333" : "11111111-1111-1111-1111-111111111111";
+      await apiClient.put(`/warehouse-policy/${warehouseUuid}`, { strategy: policyId });
+      await apiClient.get(`/warehouse-policy/${warehouseUuid}`);
+    } catch (error) {
+      console.error("Failed to sync warehouse policy:", error);
     }
   };
 
@@ -218,18 +246,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const fetchInfrastructure = async () => {
-    try {
-      const whResponse = await apiClient.get('/warehouse');
-      if (whResponse.data && whResponse.data.data && whResponse.data.data.length > 0) {
-        const firstWhId = whResponse.data.data[0].id;
-        await apiClient.get(`/warehouse/${firstWhId}`);
-        await apiClient.get(`/storage-location/warehouse/${firstWhId}`);
-      }
-    } catch (error: any) {
-      console.warn("El backend falló al traer los almacenes (Error 500). Usando almacenes de prueba (Mock Data).");
-    }
-  };
 
   useEffect(() => {
     if (user) {
@@ -251,22 +267,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         })
     );
   }, [batches]);
-
-  const setActiveWarehouse = (wh: Warehouse) => {
-    setActiveWarehouseState(wh);
-    fetchSkus();
-  };
-
-  const updatePolicy = async (policyId: string) => {
-    setPolicies(prev => prev.map(p => ({ ...p, activa: p.id === policyId })));
-    try {
-      const warehouseUuid = activeWarehouse.id === '2' ? "22222222-2222-2222-2222-222222222222" : activeWarehouse.id === '3' ? "33333333-3333-3333-3333-333333333333" : "11111111-1111-1111-1111-111111111111";
-      await apiClient.put(`/warehouse-policy/${warehouseUuid}`, { strategy: policyId });
-      await apiClient.get(`/warehouse-policy/${warehouseUuid}`);
-    } catch (error) {
-      console.error("Failed to sync warehouse policy:", error);
-    }
-  };
 
   const approveRopReplenish = async (skuId: string) => {
     const skuItem = skus.find(s => s.id === skuId);
