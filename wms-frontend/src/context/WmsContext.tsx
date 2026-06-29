@@ -27,6 +27,27 @@ interface UserSession {
   token: string;
 }
 
+export interface ProductPayload {
+  sku: string;
+  name: string;
+  category: 'FOOD_PERISHABLE' | 'FOOD_NON_PERISHABLE' | 'BEVERAGES' | 'FROZEN' | 'PHARMACEUTICAL' | 'MEDICAL_DEVICES' | 'SUPPLEMENTS' | 'PERSONAL_CARE' | 'CLEANING_SUPPLIES' | 'HOME_GOODS' | 'ELECTRONICS' | 'COMPONENTS' | 'ACCESSORIES' | 'APPAREL' | 'FOOTWEAR' | 'TEXTILES' | 'RAW_MATERIALS' | 'MACHINERY_PARTS' | 'TOOLS' | 'CHEMICALS' | 'OFFICE_SUPPLIES' | 'SEASONAL' | 'PROMOTIONAL' | 'OTHER';
+  minStockLevel: number;
+  reorderPoint: number;
+  weight: {
+    value: number;
+    unit: 'KG' | 'LBS' | 'OZ' | 'G';
+  };
+  dimensions: {
+    height: number;
+    width: number;
+    depth: number;
+    unit: 'CM' | 'M' | 'IN' | 'FT';
+  };
+  requirements: 'AMBIENT' | 'REFRIGERATED' | 'FROZEN' | 'CONTROLLED_TEMP' | 'DRY' | 'HAZARDOUS' | 'HIGH_SECURITY' | 'FLAMMABLE' | 'FRAGILE' | 'OVERSIZED';
+  leadTimeDays: number;
+  safetyStock: number;
+}
+
 interface WmsContextType {
   // Session State
   user: UserSession | null;
@@ -42,8 +63,8 @@ interface WmsContextType {
   policies: SpatialPolicy[];
   transfers: TransferOrder[];
   audits: AuditRecord[];
-  notifications: any[];
   fetchNotifications: () => Promise<void>;
+  fetchSkus: () => Promise<void>;
   
   // Controls
   searchQuery: string;
@@ -60,6 +81,7 @@ interface WmsContextType {
   confirmReservation: (id: string) => Promise<boolean>;
   releaseReservation: (id: string) => Promise<boolean>;
   registerUser: (username: string, role: string, password: string) => Promise<boolean>;
+  createProduct: (productData: ProductPayload) => Promise<boolean>;
   createWarehouse: (name: string, address: string) => Promise<boolean>;
   updateWarehouse: (id: string, name: string, address: string) => Promise<boolean>;
   deleteWarehouse: (id: string) => Promise<boolean>;
@@ -89,10 +111,11 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
 
-  // 2. WMS general states
   const [warehouses] = useState<Warehouse[]>(INITIAL_WAREHOUSES);
   const [activeWarehouse, setActiveWarehouseState] = useState<Warehouse>(INITIAL_WAREHOUSES[0]);
+
   const [skus, setSkus] = useState<SkuItem[]>(INITIAL_SKUS);
+
   const [batches, setBatches] = useState<BatchItem[]>(INITIAL_BATCHES);
   const [reservations, setReservations] = useState<Reservation[]>(INITIAL_RESERVATIONS);
   const [policies, setPolicies] = useState<SpatialPolicy[]>(INITIAL_POLICIES);
@@ -141,6 +164,32 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+   const createProduct = async (productData: ProductPayload): Promise<boolean> => {
+    try {
+
+      const response = await apiClient.post('/product', productData);
+
+      if (response.status === 200 || response.status === 201) {
+        console.log(`Producto ${productData.sku} creado con éxito.`);
+        return true;
+      }
+
+      return false;
+    } catch (error: any) {
+
+      if (error.response) {
+        console.error("El servidor rechazó la creación del producto. Estado:", error.response.status);
+        console.error("Detalle del servidor:", error.response.data);
+      } else if (error.request) {
+        console.error("No hubo respuesta del servidor al intentar crear el producto:", error.request);
+      } else {
+        console.error("Error interno de React al procesar el producto:", error.message);
+      }
+
+      return false;
+    }
+  };
+
   const fetchSkus = async () => {
     try {
       const response = await apiClient.get('/product/inactive');
@@ -167,7 +216,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             dimsStr = `${item.dimensions.height || 10}x${item.dimensions.width || 10}x${item.dimensions.depth || 10} cm`;
           }
 
-          // Calcular stock en base a lotes en memoria
           const skuBatches = batches.filter((b: any) => b.sku === item.sku);
           const stock = skuBatches.length > 0 ? skuBatches.reduce((acc: number, b: any) => acc + b.cantidad, 0) : 50; // default 50 if no batches yet
 
@@ -432,7 +480,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
   };
-
   const createWarehouse = async (name: string, address: string): Promise<boolean> => {
     try {
       await apiClient.post('/warehouse', { name, address });
@@ -666,9 +713,12 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user,
       login,
       logout,
+      registerUser,
+      createProduct,
       activeWarehouse,
       warehouses,
       skus,
+      fetchSkus,
       batches,
       reservations,
       policies,
@@ -687,7 +737,6 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createReservation,
       confirmReservation,
       releaseReservation,
-      registerUser,
       createWarehouse,
       updateWarehouse,
       deleteWarehouse,
