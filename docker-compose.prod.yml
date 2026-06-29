@@ -1,0 +1,16 @@
+# Usar junto al base:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Este archivo solo sobreescribe lo que difiere en producción.
+
+services:
+
+  db:
+    ports: []    # NO exponer postgres al exterior en producción
+    restart: always
+
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: prod         # application-prod.yml → csrf habilitado
+      JWT_COOKIE_SECURE:      "false"       # cookie Secure obligatoria en HTTPS
+    restart: always

@@ -40,7 +40,7 @@ export const MainLayout: React.FC = () => {
   const lowStockCount = skus.filter(s => s.stock <= s.rop).length;
 
   const renderSidebarLinks = () => {
-    if (user.role === 'admin') {
+    if (user.role === 'ADMIN') {
       return (
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div 
@@ -57,11 +57,48 @@ export const MainLayout: React.FC = () => {
             <ClipboardCheck size={20} />
             <span>Auditoría de Stock</span>
           </div>
+          <div 
+            onClick={() => navigate('/dashboard-analitico')} 
+            className={`wms-nav-item ${location.pathname === '/dashboard-analitico' ? 'active' : ''}`}
+          >
+            <span>📊 Dashboard</span>
+          </div>
+          <div 
+            onClick={() => navigate('/catalogo-inventario')} 
+            className={`wms-nav-item ${location.pathname === '/catalogo-inventario' ? 'active' : ''}`}
+          >
+            <span>📦 Catálogo SKUs</span>
+          </div>
+          <div 
+            onClick={() => navigate('/control-lotes')} 
+            className={`wms-nav-item ${location.pathname === '/control-lotes' ? 'active' : ''}`}
+          >
+            <span>⏳ Línea FIFO</span>
+          </div>
+          <div 
+            onClick={() => navigate('/movimientos')} 
+            className={`wms-nav-item ${location.pathname === '/movimientos' ? 'active' : ''}`}
+          >
+            <span>🔀 Movimientos</span>
+          </div>
+          <div 
+            onClick={() => navigate('/terminal-escaner')} 
+            className={`wms-nav-item ${location.pathname === '/terminal-escaner' ? 'active' : ''}`}
+          >
+            <ScanLine size={20} />
+            <span>Escaneo Terminal</span>
+          </div>
+          <div 
+            onClick={() => navigate('/tarea-conteo')} 
+            className={`wms-nav-item ${location.pathname === '/tarea-conteo' ? 'active' : ''}`}
+          >
+            <span>📋 Tarea Conteo</span>
+          </div>
         </nav>
       );
     }
 
-    if (user.role === 'manager') {
+    if (user.role === 'MANAGER') {
       return (
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div 
@@ -96,7 +133,7 @@ export const MainLayout: React.FC = () => {
   };
 
   // LAYOUT PARA OPERARIO (Mobile-First, sin sidebars complejos)
-  if (user.role === 'operator') {
+  if (user.role === 'OPERATOR') {
     return (
       <div className="wms-app-layout" style={{ background: '#090d16' }}>
         {/* Encabezado móvil simple */}
@@ -192,14 +229,14 @@ export const MainLayout: React.FC = () => {
       <header className="wms-header">
         <div className="wms-header-left">
           <div className="wms-logo" style={{ cursor: 'pointer' }} onClick={() => {
-            if (user.role === 'admin') navigate('/configuracion-espacial');
+            if (user.role === 'ADMIN') navigate('/configuracion-espacial');
             else navigate('/dashboard-analitico');
           }}>
             <Shield size={20} style={{ color: 'var(--color-primary)' }} />
             <span>SGA PANEL</span>
           </div>
 
-          {user.role === 'manager' && location.pathname === '/catalogo-inventario' && (
+          {user.role === 'MANAGER' && location.pathname === '/catalogo-inventario' && (
             <div className="wms-search-bar">
               <Search size={18} style={{ color: 'var(--text-muted)' }} />
               <input
@@ -234,7 +271,7 @@ export const MainLayout: React.FC = () => {
           </div>
 
           {/* Notificaciones de Alertas de Stock Mínimo para el Manager */}
-          {user.role === 'manager' && (
+          {user.role === 'MANAGER' && (
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', cursor: 'pointer' }} title={`${lowStockCount} Alertas de stock crítico`}>
               <Bell size={20} style={{ color: lowStockCount > 0 ? 'var(--color-warning)' : 'var(--text-muted)' }} />
               {lowStockCount > 0 && (
@@ -267,7 +304,7 @@ export const MainLayout: React.FC = () => {
                 {user.username}
               </span>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
-                {user.role === 'admin' ? 'Administrador' : 'Jefe Almacén'}
+                {user.role === 'ADMIN' ? 'Administrador' : 'Jefe Almacén'}
               </span>
             </div>
             <button 

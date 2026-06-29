@@ -29,9 +29,9 @@ const HomeRedirect: React.FC = () => {
   }
   
   // Redirigir según el rol activo
-  if (user.role === 'admin') {
+  if (user.role === 'ADMIN') {
     return <Navigate to="/configuracion-espacial" replace />;
-  } else if (user.role === 'manager') {
+  } else if (user.role === 'MANAGER') {
     return <Navigate to="/dashboard-analitico" replace />;
   } else {
     return <Navigate to="/terminal-escaner" replace />;
@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="configuracion-espacial" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <SpatialConfig />
               </ProtectedRoute>
             } 
@@ -63,7 +63,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="auditoria" 
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AuditTable />
               </ProtectedRoute>
             } 
@@ -73,7 +73,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="dashboard-analitico" 
             element={
-              <ProtectedRoute allowedRoles={['manager']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <AnalyticalDashboard />
               </ProtectedRoute>
             } 
@@ -81,7 +81,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="catalogo-inventario" 
             element={
-              <ProtectedRoute allowedRoles={['manager']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <InventoryCatalog />
               </ProtectedRoute>
             } 
@@ -89,7 +89,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="control-lotes" 
             element={
-              <ProtectedRoute allowedRoles={['manager']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <BatchTimeline />
               </ProtectedRoute>
             } 
@@ -97,7 +97,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="movimientos" 
             element={
-              <ProtectedRoute allowedRoles={['manager']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <MovementsPanel />
               </ProtectedRoute>
             } 
@@ -107,7 +107,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="terminal-escaner" 
             element={
-              <ProtectedRoute allowedRoles={['operator']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <TerminalEscaner />
               </ProtectedRoute>
             } 
@@ -115,7 +115,7 @@ const AppContent: React.FC = () => {
           <Route 
             path="tarea-conteo" 
             element={
-              <ProtectedRoute allowedRoles={['operator']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <TareaConteo />
               </ProtectedRoute>
             } 

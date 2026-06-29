@@ -196,25 +196,6 @@ export const Register: React.FC = () => {
             <ArrowRight size={18} />
           </button>
         </form>
-
-        {/* Enlace para alternar a Login */}
-        <button
-          type="button"
-          onClick={() => navigate('/login')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--color-primary)',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            textAlign: 'center',
-            width: '100%',
-            marginTop: '16px',
-            textDecoration: 'underline'
-          }}
-        >
-          ¿Ya tienes cuenta? Inicia Sesión
-        </button>
       </div>
     </div>
   );

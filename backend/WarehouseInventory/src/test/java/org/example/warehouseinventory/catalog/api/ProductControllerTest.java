@@ -364,7 +364,9 @@ public class ProductControllerTest {
                 20,
                 ProductCategory.ELECTRONICS,
                 StorageRequirement.AMBIENT,
-                true
+                true,
+                5,
+                15
         );
     }
 
@@ -383,7 +385,9 @@ public class ProductControllerTest {
                         new BigDecimal("5.0"),
                         DimensionUnit.CM
                 ),
-                StorageRequirement.AMBIENT
+                StorageRequirement.AMBIENT,
+                5,
+                15
         );
     }
 
@@ -401,7 +405,9 @@ public class ProductControllerTest {
                         new BigDecimal("5.0"),
                         DimensionUnit.CM
                 ),
-                StorageRequirement.AMBIENT
+                StorageRequirement.AMBIENT,
+                5,
+                15
         );
     }
 }

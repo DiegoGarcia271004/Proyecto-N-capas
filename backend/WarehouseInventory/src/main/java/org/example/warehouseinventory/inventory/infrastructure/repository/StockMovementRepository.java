@@ -17,15 +17,15 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
     List<StockMovement> findByLotId(UUID lotId);
 
     @Query(value = """
-            SELECT l.product_id      AS productId,
-                   l.warehouse_id    AS warehouseId,
-                   CAST(SUM(sm.quantity) AS INTEGER) AS totalExitQuantity
-            FROM stock_movement sm
-            JOIN lot l ON sm.lot_id = l.id
-            WHERE sm.type = 'EXIT'
-              AND sm.created_at BETWEEN :from AND :to
-            GROUP BY l.product_id, l.warehouse_id
-            """, nativeQuery = true)
+        SELECT l.product_id  AS productId,
+           l.warehouse   AS warehouseId,
+           CAST(SUM(sm.quantity) AS INTEGER) AS totalExitQuantity
+        FROM stock_movement sm
+        JOIN lot l ON sm.lot = l.id
+        WHERE sm.type = 'EXIT'
+        AND sm.created_at BETWEEN :from AND :to
+        GROUP BY l.product_id, l.warehouse
+    """, nativeQuery = true)
     List<ExitSummaryProjection> sumExitByProductAndWarehouse(
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to

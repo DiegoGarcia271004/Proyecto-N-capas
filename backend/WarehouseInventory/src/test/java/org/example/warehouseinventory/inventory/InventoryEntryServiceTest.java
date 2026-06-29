@@ -184,7 +184,9 @@ class InventoryEntryServiceTest {
                 10,
                 20,
                 ProductCategory.OTHER,
-                StorageRequirement.AMBIENT
+                StorageRequirement.AMBIENT,
+                5,
+                15
         );
     }
 

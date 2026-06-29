@@ -31,11 +31,11 @@ public class AuthController extends BaseController {
 
     @PostMapping("/login")
     public ResponseEntity<GeneralResponse> login(@Valid @RequestBody LoginRequest req, HttpServletRequest request, HttpServletResponse res) {
-        authService.login(req, res);
+        var userResponse = authService.login(req, res);
 
         CsrfToken csrfToken = csrfTokenRepository.generateToken(request);
         csrfTokenRepository.saveToken(csrfToken, request, res);
-        return buildResponse("Login successful", HttpStatus.OK, null);
+        return buildResponse("Login successful", HttpStatus.OK, userResponse);
     }
 
 
