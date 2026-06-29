@@ -60,7 +60,6 @@ interface WmsContextType {
   policies: SpatialPolicy[];
   transfers: TransferOrder[];
   audits: AuditRecord[];
-  notifications: any[];
   fetchNotifications: () => Promise<void>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -103,7 +102,9 @@ export const WmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [warehouses] = useState<Warehouse[]>(INITIAL_WAREHOUSES);
   const [activeWarehouse, setActiveWarehouseState] = useState<Warehouse>(INITIAL_WAREHOUSES[0]);
+
   const [skus, setSkus] = useState<SkuItem[]>(INITIAL_SKUS);
+
   const [batches, setBatches] = useState<BatchItem[]>(INITIAL_BATCHES);
   const [reservations, setReservations] = useState<Reservation[]>(INITIAL_RESERVATIONS);
   const [policies, setPolicies] = useState<SpatialPolicy[]>(INITIAL_POLICIES);
